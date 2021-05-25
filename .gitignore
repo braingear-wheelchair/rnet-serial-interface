@@ -10,3 +10,10 @@ libtool
 m4
 *.*~
 *.pc
+*.lo
+*.swp
+.deps
+.libs
+*.o
+core
+*.la

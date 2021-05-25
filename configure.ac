@@ -33,8 +33,7 @@ AC_SUBST(LIBTOOL_DEPS)
 
 
 # Checks for libraries.
-#PKG_CHECK_MODULES([DEPS], [cnbicore cnbiloop cnbiconfig cnbiprotocol tobicore
-#		   tobiic tobiid tobiplatform cnbismr])
+PKG_CHECK_MODULES([libserial], [libserial], [], AC_MSG_ERROR([Libserial cannot be found.]))
 #AC_SEARCH_LIBS([dtk_create_circle_str], [drawtk], 
 #               [], AC_MSG_ERROR([The drawtk library has not been found]))
 
