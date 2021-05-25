@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <exception>
+#include <mutex>
 #include <libserial/SerialPort.h>
 
 #include "RNetPacket.hpp"
@@ -53,6 +54,8 @@ class RNetSerial {
 		LibSerial::StopBits		 stopbits_;
 
 		uint8_t sequence_number_;
+
+		std::mutex	mutex_;
 
 };
 

@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
 	//std::cin >> input2;
 	
 	int8_t vx = 0;
-	int8_t vy = 20;
+	int8_t vy = -40;
 	int i = 0;
 
 	rnetserial::RNetPacket AckTx;
@@ -52,10 +52,10 @@ int main(int argc, char** argv) {
 	}
 	
 	printf("QUI\n");
-	//while(1) {
+	while(1) {
 		rnet.SendVelocity(vx, vy);
-	//	std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	//}
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
 
 
 	//for(auto i = 0; i<33; i++)

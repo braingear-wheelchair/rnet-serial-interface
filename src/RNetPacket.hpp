@@ -3,10 +3,8 @@
 
 #include <vector>
 #include <string>
-#include "RNetChecksum.hpp"
-
-#define RNETPACKET_SIZE_HEADER		4
-#define RNETPACKET_SYN_DEFAULT      0x55
+#include "RNetDefinitions.hpp"
+#include "RNetUtility.hpp"
 
 
 namespace rnetserial {

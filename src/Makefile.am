@@ -5,11 +5,12 @@ bin_PROGRAMS = serial_read_write \
 
 librnetserial_includedir = $(includedir)/rnetserial
 
-librnetserial_include_HEADERS = RNetChecksum.hpp \
+librnetserial_include_HEADERS = RNetDefinitions.hpp \
+								RNetUtility.hpp \
 								RNetPacket.hpp \
 								RNetSerial.hpp
 
-librnetserial_la_SOURCES =  RNetChecksum.cpp \
+librnetserial_la_SOURCES =  RNetUtility.cpp \
 							RNetPacket.cpp \
 							RNetSerial.cpp
 

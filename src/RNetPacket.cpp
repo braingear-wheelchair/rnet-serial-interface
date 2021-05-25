@@ -42,6 +42,8 @@ PacketData* RNetPacket::GetData(void) {
 	return &(this->data_);
 }
 
+
+
 std::vector<uint8_t> RNetPacket::Encode(void) {
 
 	std::vector<uint8_t> vpacket;
@@ -116,7 +118,7 @@ std::vector<uint8_t> RNetPacket::EncodeHeader(void) {
 	// byte 3: CheckSum CRC 8
 	CheckBlock[0] = Header[1];
 	CheckBlock[1] = Header[2];
-	RNetChecksum::CRC8(&CheckSum, CheckBlock, 2);
+	RNetUtility::CRC8(&CheckSum, CheckBlock, 2);
 
 	Header[3] = CheckSum;
 
@@ -137,7 +139,7 @@ std::vector<uint8_t> RNetPacket::EncodeData(void) {
 	uint8_t  Data[this->data_.DataLength + 2];
 	uint16_t CheckSum;
 
-	RNetChecksum::CRC16(&CheckSum, this->data_.Data, this->data_.DataLength);
+	RNetUtility::CRC16(&CheckSum, this->data_.Data, this->data_.DataLength);
 
 	for(auto i = 0; i<this->data_.DataLength; i++) {
 		Data[i] = this->data_.Data[i];
