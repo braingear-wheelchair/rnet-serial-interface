@@ -44,6 +44,7 @@ PacketData* RNetPacket::GetData(void) {
 
 
 
+
 std::vector<uint8_t> RNetPacket::Encode(void) {
 
 	std::vector<uint8_t> vpacket;

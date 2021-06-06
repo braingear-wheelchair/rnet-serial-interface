@@ -28,8 +28,12 @@ AC_CANONICAL_BUILD
 
 # Checks for programs.
 AC_PROG_CXX
+AX_CXX_COMPILE_STDCXX_11
 LT_INIT([win32-dll disable-static])
 AC_SUBST(LIBTOOL_DEPS)
+
+AC_SEARCH_LIBS([pthread_create], [pthread posix4], [],
+               AC_MSG_ERROR([The pthread library has not been found]))
 
 
 # Checks for libraries.

@@ -6,9 +6,11 @@
 #include <iostream>
 #include <exception>
 #include <mutex>
+#include <thread>
 #include <libserial/SerialPort.h>
 
 #include "RNetPacket.hpp"
+#include "RNetTimer.hpp"
 
 #define ACK_LENGTH	4  // bytes
 #define ACK_TIMEOUT	0  // milliseconds
@@ -29,16 +31,24 @@ class RNetSerial {
 		bool SetParity(const LibSerial::Parity& parity);
 		bool SetStopBits(const LibSerial::StopBits& stopbits);
 
+		bool ReadPacket(RNetPacket& packet);
+	
+		bool WaitForAck(uint8_t SeqNum, int timeout = 20);	
+
 		bool Connect(void);
 		bool SendVelocity(int8_t vx, int8_t vy);
-		bool ReadPacket(RNetPacket& packet, size_t NBytes = 7, size_t Timeout = 5);
+		bool ReadPacket(RNetPacket& packet, size_t NBytes, size_t Timeout);
 		void Close(void);
-		
+		void Shutdown(void);
+	
+		void SetSequence(uint8_t SeqNum);
 		uint8_t GetSequence(void);
 
 		const std::string name(void);
 		bool WritePacket(RNetPacket& packet);
 
+		void Lock();
+		void UnLock();
 	protected:
 		void IncrementSequence(void);
 

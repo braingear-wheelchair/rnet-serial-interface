@@ -132,6 +132,7 @@ bool RNetSerial::Open(const std::string port) {
 		printf("[%s] Error setting port \"%s\" with default parameters.\n", this->name().c_str(), port.c_str());
 	}
 
+
 	return OpenRes & SetRes;
 }
 
@@ -141,21 +142,26 @@ bool RNetSerial::Connect(void) {
 	RNetPacket AckTx;
 	RNetPacket AckRx;
 	bool rread;
+	uint8_t SeqNum;
 
 	uint8_t StartupMessageLength = 1;
 	uint8_t StartupMessage[StartupMessageLength];
 
 	// Startup packet
-	
 	StartupMessage[0] = 0x1;
-	Startup.SetHeader(this->GetSequence(), 1, PacketType::DATAPACKET, StartupMessageLength);
+	this->Lock();
+	SeqNum = this->GetSequence();
+	this->UnLock();
+	Startup.SetHeader(SeqNum, 1, PacketType::DATAPACKET, StartupMessageLength);
 	Startup.SetData(StartupMessage, StartupMessageLength);
 
 	// Write startup packet
+	this->Lock();
 	this->WritePacket(Startup);
 
 	// Wait for ACK packet
-	rread = this->ReadPacket(AckRx, ACK_LENGTH, ACK_TIMEOUT);
+	while(this->ReadPacket(AckRx) == false);
+	AckRx.Dump();
 	
 	if(AckRx.DoesMatch(this->GetSequence()) == false) {
 		printf("[%s] Error acknowledge packet (SN=%d) does not match with "
@@ -167,35 +173,138 @@ bool RNetSerial::Connect(void) {
 	// Write ACK packet
 	AckTx.SetHeader(this->GetSequence(), 0, PacketType::ACKPACKET, 0);
 	this->WritePacket(AckTx);
+	this->UnLock();
 	
+	this->Lock();
 	this->IncrementSequence();
+	this->UnLock();
 
 	return true;
 }
 
 bool RNetSerial::SendVelocity(int8_t vx, int8_t vy) {
 
+	RNetPacket AckRx;
 	uint8_t MessageLength = 5;
 	uint8_t PacketType = 2;
+	uint8_t SeqNum;
 
 	uint8_t Message[MessageLength];
-	
-	Message[0] = 0xb;
-	Message[1] = 0x0;
-	Message[2] = 0x0;
+
+	Message[0] = 0x0b;
+	Message[1] = 0x00;
+	Message[2] = 0x00;
 	Message[3] = (uint8_t)vx;
 	Message[4] = (uint8_t)vy;
 
+	printf("Get sequence..\n");
 	// Create RNet data packet
 	RNetPacket packet;
-	packet.SetHeader(this->GetSequence(), 0, PacketType::DATAPACKET, MessageLength);
+	this->Lock();
+	SeqNum = this->GetSequence();
+	this->UnLock();
+	packet.SetHeader(SeqNum, 0, PacketType::DATAPACKET, MessageLength);
 	packet.SetData(Message, MessageLength);
 
+	printf("Send velocity...\n");
 	// Write packet on serial port
-	this->WritePacket(packet);
+	//this->WritePacket(packet);
+	//std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	
+	this->Lock();
+	//this->WritePacket(packet);
+	do {
+		this->WritePacket(packet);
+		std::this_thread::sleep_for(std::chrono::milliseconds(20));
+		//printf("Data sent: ");
+		packet.DumpRaw();
+	} while (this->WaitForAck(SeqNum) == false);
+	printf("Sent and Ack received\n");
+	this->UnLock();
+
+
+	this->Lock();
 	this->IncrementSequence();
+	this->UnLock();
+
 }
+
+void RNetSerial::Shutdown(void) {
+	RNetPacket AckRx;
+	uint8_t MessageLength = 3;
+	uint8_t PacketType = 2;
+	uint8_t SeqNum;
+
+	uint8_t Message[MessageLength];
+
+	Message[0] = 0x0a;
+	Message[1] = 0x04;
+	Message[2] = 0x00;
+
+	printf("Get sequence..\n");
+	// Create RNet data packet
+	RNetPacket packet;
+	this->Lock();
+	SeqNum = this->GetSequence();
+	this->UnLock();
+	packet.SetHeader(SeqNum, 0, PacketType::DATAPACKET, MessageLength);
+	packet.SetData(Message, MessageLength);
+
+	packet.Dump();
+	printf("Send shutdown...\n");
+
+	// Write packet on serial port
+	//this->WritePacket(packet);
+	//std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	
+	this->Lock();
+	//this->WritePacket(packet);
+	do {
+		this->WritePacket(packet);
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		//printf("Data sent: ");
+		packet.DumpRaw();
+	} while (this->WaitForAck(SeqNum) == false);
+	printf("Shutodwon sent and Ack received\n");
+	this->UnLock();
+
+
+	this->Lock();
+	this->IncrementSequence();
+	this->UnLock();
+
+
+
+}
+
+
+bool RNetSerial::WaitForAck(uint8_t SeqNum, int timeout) {
+
+	RNetPacket Ack;
+	bool ret = false;
+	timer_msecs timer;
+	int64_t elapsed;
+
+	timer.tic();
+	while(ret == false) {
+		if(this->ReadPacket(Ack) == true) {
+			if(Ack.GetHeader()->SequenceNumber == SeqNum) {
+				//Ack.DumpRaw();
+				ret = true;
+			}
+		}
+
+		if(timer.toc() >= RNETCOMM_ACKTIMEOUT) {
+			ret = false;
+			printf(">>>>>>>>>>>>>>>>TIMEOUT<<<<<<<<<<<<<<<<<<\n");
+			break;
+		}
+
+	}
+
+	return ret;
+}
+
 
 bool RNetSerial::WritePacket(RNetPacket& packet) {
 
@@ -203,12 +312,56 @@ bool RNetSerial::WritePacket(RNetPacket& packet) {
 
 	vpacket = packet.Encode();
 
-	this->mutex_.lock();
 	this->serialport_.Write(vpacket);
 	this->serialport_.DrainWriteBuffer();
-	this->mutex_.unlock();
+}
 
-	packet.DumpRaw();
+
+bool RNetSerial::ReadPacket(RNetPacket& packet) {
+
+	
+	std::vector<uint8_t> vpacket;
+	std::vector<uint8_t> vdata;
+	uint8_t DataLength;
+
+	// Read Header, block until 4 bytes are received or 1 ms is elapsed
+	// If no data is received, it returns false
+	try {
+		this->serialport_.Read(vpacket, 4, 1);
+	} catch (std::runtime_error& e) {
+		return false;
+	}
+
+	// Check header validity (size and checksum)
+	if(RNetUtility::IsHeaderValid(vpacket) == false)
+		return false;
+
+	// Check Data Part: Data length
+	DataLength = RNetUtility::GetDataLength(vpacket);
+	
+	// If data length is 0, then is an ACK package
+	if (DataLength == 0) {
+		packet.Decode(vpacket);
+		return true;
+	}
+
+	// Otherwise read the other byte (DataLength + 2)
+	try {
+		this->serialport_.Read(vdata, DataLength+2, 1);
+	} catch (std::runtime_error& e) {
+		return false;
+	}
+
+	// Check data part validity
+	if(RNetUtility::IsDataValid(vdata) == false)
+		return false;
+
+	// A complete packet has arrived
+	vpacket.insert(vpacket.end(), vdata.begin(), vdata.end());
+	packet.Decode(vpacket);
+
+	return true;
+
 }
 
 bool RNetSerial::ReadPacket(RNetPacket& packet, size_t NBytes, size_t Timeout) {
@@ -218,38 +371,41 @@ bool RNetSerial::ReadPacket(RNetPacket& packet, size_t NBytes, size_t Timeout) {
 
 	// Header
 		try {
-			this->mutex_.lock();
-			this->serialport_.Read(vheader, 4, 100);
-			this->mutex_.unlock();
+			this->serialport_.Read(vheader, 4, Timeout);
 		} catch (std::runtime_error& e) {
-			this->mutex_.unlock();
+			//printf("exit from reading header, mutex unlocked\n");
 			return false;
 		}
 
-	printf("Header received: ");
-	for(auto i=0; i<vheader.size(); i++) 
-		printf("%02x ", vheader.at(i));
-	printf("\n");
+	//printf("Header received: ");
+	//for(auto i=0; i<vheader.size(); i++) 
+	//	printf("%02x ", vheader.at(i));
+	//printf("\n");
 
 
 	uint8_t length = RNetUtility::GetDataLength(vheader);
-	printf("Length: %d\n", length);
+	//printf("Length: %d\n", length);
 
 	if (length > 0) {
 		try {
-			this->mutex_.lock();
-			this->serialport_.Read(vdata, length+2, 100);
-			this->mutex_.unlock();
+			std::lock_guard<std::mutex> lg(this->mutex_);
+			this->serialport_.Read(vdata, length+2, Timeout);
 		} catch (std::runtime_error& e) {
-			this->mutex_.unlock();
+			return false;
 		}
-		printf("Data received: ");
-		for(auto i=0; i<vdata.size(); i++) 
-			printf("%02x ", vdata.at(i));
-		printf("\n");
+		//printf("Data received: ");
+		//for(auto i=0; i<vdata.size(); i++) 
+		//	printf("%02x ", vdata.at(i));
+		//printf("\n");
+	} else {
+		return false;
 	}
 
 	vheader.insert(vheader.end(), vdata.begin(), vdata.end());
+	printf("Data received: ");
+	for(auto i=0; i<vheader.size(); i++) 
+		printf("%02x ", vheader.at(i));
+	printf("\n");
 
 	packet.Decode(vheader);
 
@@ -258,6 +414,7 @@ bool RNetSerial::ReadPacket(RNetPacket& packet, size_t NBytes, size_t Timeout) {
 }
 
 void RNetSerial::Close(void) {
+
 	this->mutex_.lock();
 	this->serialport_.Close();
 	this->mutex_.unlock();
@@ -269,29 +426,38 @@ void RNetSerial::Close(void) {
 const std::string RNetSerial::name(void) {
 	std::string name;
 
-	this->mutex_.lock();
 	name = this->name_;
-	this->mutex_.unlock();
 
 	return name;
 }
 
 uint8_t RNetSerial::GetSequence(void) {
 	uint8_t SeqNum;
-	this->mutex_.lock();
+	
 	SeqNum = this->sequence_number_;
-	this->mutex_.unlock();
 
 	return SeqNum;
 
 }
 
+void RNetSerial::SetSequence(uint8_t SeqNum) {
+
+	this->sequence_number_ = SeqNum;
+
+}
+
 void RNetSerial::IncrementSequence(void) {
 
-	this->mutex_.lock();
 	this->sequence_number_++;
 	if(this->sequence_number_ > 31)
 		this->sequence_number_ = 0;
+}
+
+void RNetSerial::Lock(void) {
+	this->mutex_.lock();
+}
+
+void RNetSerial::UnLock(void) {
 	this->mutex_.unlock();
 }
 
