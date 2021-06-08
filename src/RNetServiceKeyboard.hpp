@@ -11,19 +11,17 @@
 #include <chrono>
 #include <unistd.h>
 
-
+#include "RNetService.hpp"
 
 namespace rnetserial {
 
-class RNetServiceKeyboard {
+class RNetServiceKeyboard : public RNetService {
 	public:
 		RNetServiceKeyboard(void);
 		~RNetServiceKeyboard(void);
 
 		void GetKey(int& key);
 		void Run(void);
-		void Start(void);
-		void Stop(void);
 
 	private:
 		int kbhit(void);
@@ -34,6 +32,7 @@ class RNetServiceKeyboard {
 		bool run_;
 		int peek_character;
 		int key_;
+		termios term_;
 
 };
 

@@ -7,19 +7,18 @@
 namespace rnetserial {
 
 RNetServiceKeyboard::RNetServiceKeyboard(void) {
-	this->run_ = true;
 }
 
 RNetServiceKeyboard::~RNetServiceKeyboard(void) {
 	this->disable_raw_mode();
-	tcflush(0, TCIFLUSH);
+	//tcflush(0, TCIFLUSH);
 }
 
 void RNetServiceKeyboard::Run(void) {
 
 	char key;
 	this->enable_raw_mode();
-	while(this->run_) {
+	while(this->IsRunning()) {
 		
 		if(this->kbhit()) {
 			this->key_ = this->getch();
@@ -30,7 +29,10 @@ void RNetServiceKeyboard::Run(void) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 
+	printf("KEY SERVICE IS NOT RUNNING\n\r");
 	this->disable_raw_mode();
+	//tcflush(0, TCIFLUSH);
+	//tcflush(0, TCOFLUSH);
 
 }
 
@@ -77,26 +79,28 @@ int RNetServiceKeyboard::getch(){
 }
 
 void RNetServiceKeyboard::enable_raw_mode() {
-    termios term;
-    tcgetattr(0, &term);
+    //termios term;
+    //tcgetattr(0, &term);
+    //term.c_lflag &= ~(ICANON | ECHO); // Disable echo as well
+    //tcsetattr(0, TCSANOW, &term);
+	termios term;
+    tcgetattr(0, &(this->term_));
+	term = this->term_;
     term.c_lflag &= ~(ICANON | ECHO); // Disable echo as well
-    tcsetattr(0, TCSANOW, &term);
+    tcsetattr(0, TCSANOW, &(term));
 }
 
 void RNetServiceKeyboard::disable_raw_mode() {
-    termios term;
-    tcgetattr(0, &term);
-    term.c_lflag |= ICANON | ECHO;
-    tcsetattr(0, TCSANOW, &term);
+    //termios term;
+    //tcgetattr(0, &term);
+    //term.c_lflag |= ICANON | ECHO;
+    //tcsetattr(0, TCSANOW, &term);
+    this->term_.c_lflag |= ICANON | ECHO;
+	tcsetattr(0, TCSANOW, &(this->term_));
+	printf("\r\n");
 }
 
-void RNetServiceKeyboard::Start(void) {
-	this->run_ = true;
-}
 
-void RNetServiceKeyboard::Stop(void) {
-	this->run_ = false;
-}
 
 }
 

@@ -1,5 +1,5 @@
-#ifndef RNETSERIAL_HPP
-#define RNETSERIAL_HPP
+#ifndef RNET_SERIAL_HPP
+#define RNET_SERIAL_HPP
 
 #include <string>
 #include <unistd.h>
@@ -12,56 +12,43 @@
 #include "RNetPacket.hpp"
 #include "RNetTimer.hpp"
 
-#define ACK_LENGTH	4  // bytes
-#define ACK_TIMEOUT	0  // milliseconds
 
 namespace rnetserial {
 
 
-class RNetSerial {
+class RNetSerial : protected LibSerial::SerialPort {
 	public:
 		RNetSerial(const std::string name = "rnetserial");
 		~RNetSerial(void);
 
-		bool Open(const std::string port);
-		bool SetDefaultParameters(void);
-		bool SetBaudRate(const LibSerial::BaudRate& baudrate);
-		bool SetCharacterSize(const LibSerial::CharacterSize& charactersize);
-		bool SetFlowControl(const LibSerial::FlowControl& flowcontrol);
-		bool SetParity(const LibSerial::Parity& parity);
-		bool SetStopBits(const LibSerial::StopBits& stopbits);
-
+		bool OpenPort(const std::string port);
+		void ClosePort(void);
+		bool Connect(int timeout = -1);
+		
+		bool WritePacket(RNetPacket& packet);
 		bool ReadPacket(RNetPacket& packet);
-	
-		bool WaitForAck(uint8_t SeqNum, int timeout = 20);	
+		
+		//bool ReadPacket(RNetPacket& packet, size_t NBytes, size_t Timeout);
 
-		bool Connect(void);
+	
+		bool WaitForAck(uint8_t SeqNum, int timeout = RNETCOMM_ACKTIMEOUT);	
+
 		bool SendVelocity(int8_t vx, int8_t vy);
-		bool ReadPacket(RNetPacket& packet, size_t NBytes, size_t Timeout);
-		void Close(void);
 		void Shutdown(void);
 	
 		void SetSequence(uint8_t SeqNum);
 		uint8_t GetSequence(void);
 
 		const std::string name(void);
-		bool WritePacket(RNetPacket& packet);
 
 		void Lock();
 		void UnLock();
-	protected:
 		void IncrementSequence(void);
+	protected:
 
 	private:
 		std::string port_;
 		std::string name_;
-
-		LibSerial::SerialPort	 serialport_;
-		LibSerial::BaudRate		 baudrate_;
-		LibSerial::CharacterSize charactersize_;
-		LibSerial::FlowControl	 flowcontrol_;
-		LibSerial::Parity		 parity_;
-		LibSerial::StopBits		 stopbits_;
 
 		uint8_t sequence_number_;
 
