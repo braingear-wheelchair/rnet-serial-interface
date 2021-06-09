@@ -8,88 +8,83 @@ namespace rnetserial {
 RNetPacket::RNetPacket(void) {
 	
 	// Initialize Data array
-	this->data_.Data	   = nullptr;
-	this->data_.DataLength = 0;
+	this->startup_		= 0;
+	this->data_			= nullptr;
+	this->datalength_	= 0;
 }
 
 RNetPacket::~RNetPacket(void) {
-	if(this->data_.Data != nullptr) {
-		delete this->data_.Data;
-	}
+	this->delete_data_array();
 }
 
-void RNetPacket::SetHeader(uint8_t SeqNum, bool StartupFlag, uint8_t Descriptor, uint8_t DataLength) {
-	this->header_.SequenceNumber = SeqNum;
-	this->header_.StartupFlag    = StartupFlag;
-	this->header_.Descriptor     = Descriptor;
-	this->header_.DataLength     = DataLength;
+void RNetPacket::Set(uint8_t SeqNum, uint8_t Type, uint8_t* Data, uint8_t DataLength, bool Startup) {
+	
+	// Packet setup
+	this->SetStartupFlag(Startup);
+	this->SetSeqNum(SeqNum);
+	this->SetType(Type);
+	this->SetData(Data, DataLength);
 }
 
-void RNetPacket::SetData(uint8_t* Data, uint8_t DataLength) {
-
-	this->data_.Data	   = new uint8_t[DataLength];
-	this->data_.DataLength = DataLength;
-
-	for(auto i = 0; i<DataLength; i++)
-		this->data_.Data[i] = Data[i];
+void RNetPacket::SetStartupFlag(bool startup) {
+	this->startup_ = startup;
 }
 
-PacketHeader* RNetPacket::GetHeader(void) {
-	return &(this->header_);
+void RNetPacket::SetSeqNum(uint8_t seqnum) {
+	this->seqnum_ = seqnum;
 }
 
-PacketData* RNetPacket::GetData(void) {
-	return &(this->data_);
+void RNetPacket::SetType(uint8_t type) {
+	this->type_ = type;
 }
 
+void RNetPacket::SetData(uint8_t* data, uint8_t datalength) {
 
+	// Deleting current data array
+	this->delete_data_array();
 
+	this->datalength_ = datalength;
+	this->data_       = new uint8_t[datalength];
 
-std::vector<uint8_t> RNetPacket::Encode(void) {
-
-	std::vector<uint8_t> vpacket;
-	std::vector<uint8_t> vdata;
-
-	vpacket = this->EncodeHeader();
-
-	if(this->header_.DataLength > 0)
-		vdata = this->EncodeData();
-
-	vpacket.insert(vpacket.end(), vdata.begin(), vdata.end());
-
-	return vpacket;
+	for(auto i=0; i<datalength; i++)
+		this->data_[i] = data[i];
 }
 
-void RNetPacket::Decode(std::vector<uint8_t> packet) {
-
-	std::vector<uint8_t> vheader;
-	std::vector<uint8_t> vdata;
-
-	vheader.insert(vheader.end(), packet.begin(), packet.begin() + RNETPACKET_SIZE_HEADER);
-	vdata.insert(vdata.end(), packet.begin() + RNETPACKET_SIZE_HEADER, packet.end());
-
-	this->DecodeHeader(vheader);
-
-	if (vdata.size() > 0)
-		this->DecodeData(vdata);
+bool RNetPacket::GetStartupFlag(void) {
+	return this->startup_;
 }
 
-void RNetPacket::DecodeHeader(std::vector<uint8_t> header) {
-	this->header_.SequenceNumber = (header.at(1) & 0xF8) >> 3;
-	this->header_.StartupFlag	 = (header.at(1) & 0x4) >> 2;
-	this->header_.Descriptor	 = (header.at(1) & 0x3);
-	this->header_.DataLength	 = header.at(2);
+uint8_t RNetPacket::GetSeqNum(void) {
+	return this->seqnum_;
 }
 
-void RNetPacket::DecodeData(std::vector<uint8_t> data) {
-
-	this->data_.DataLength = data.size() - 2;
-	this->data_.Data	   = new uint8_t[this->data_.DataLength];
-
-	for(auto i = 0; i<this->data_.DataLength; i++)
-		this->data_.Data[i] = data.at(i);
+uint8_t RNetPacket::GetType(void) {
+	return this->type_;
 }
 
+uint8_t RNetPacket::GetDataLength(void) {
+	return this->datalength_;
+}
+
+uint8_t* RNetPacket::GetData(void) {
+	return this->data_;
+}
+
+bool RNetPacket::IsType(uint8_t type) {
+	return (type == this->type_);
+}
+
+bool RNetPacket::IsSeqNum(uint8_t seqnum) {
+	return (seqnum == this->seqnum_);
+}
+
+bool RNetPacket::IsStartup(void) {
+	return (this->startup_ == 1);
+}
+
+/*******************************************************************************
+ * Encoding methods
+ ******************************************************************************/
 
 /*********************************
  * Header Part Format	
@@ -109,17 +104,17 @@ std::vector<uint8_t> RNetPacket::EncodeHeader(void) {
 	Header[0] = RNETPACKET_SYN_DEFAULT;
 
 	// byte 1: SequenceNumber (5 bits), StartupFlag (1 bits), PacketDescriptor (2 bits) 
-	Header[1] = Header[1] | this->header_.SequenceNumber << 3; 
-	Header[1] = Header[1] | this->header_.StartupFlag << 2;
-	Header[1] = Header[1] | this->header_.Descriptor;
+	Header[1] = Header[1] | this->seqnum_  << 3; 
+	Header[1] = Header[1] | this->startup_ << 2;
+	Header[1] = Header[1] | this->type_;
 
 	// byte 2: Data Length (in bytes)
-	Header[2] = this->header_.DataLength;
+	Header[2] = this->datalength_;
 
 	// byte 3: CheckSum CRC 8
 	CheckBlock[0] = Header[1];
 	CheckBlock[1] = Header[2];
-	RNetUtility::CRC8(&CheckSum, CheckBlock, 2);
+	RNetChecksum::CRC8(&CheckSum, CheckBlock, 2);
 
 	Header[3] = CheckSum;
 
@@ -137,26 +132,78 @@ std::vector<uint8_t> RNetPacket::EncodeHeader(void) {
  ********************************/
 std::vector<uint8_t> RNetPacket::EncodeData(void) {
 
-	uint8_t  Data[this->data_.DataLength + 2];
+	uint8_t  Data[this->datalength_ + 2];
 	uint16_t CheckSum;
 
-	RNetUtility::CRC16(&CheckSum, this->data_.Data, this->data_.DataLength);
+	RNetChecksum::CRC16(&CheckSum, this->data_, this->datalength_);
 
-	for(auto i = 0; i<this->data_.DataLength; i++) {
-		Data[i] = this->data_.Data[i];
+	for(auto i = 0; i<this->datalength_; i++) {
+		Data[i] = this->data_[i];
 	}
 
-	Data[this->data_.DataLength]   = CheckSum >> 8;
-	Data[this->data_.DataLength+1] = CheckSum & 0xFF;
+	Data[this->datalength_]   = CheckSum >> 8;
+	Data[this->datalength_+1] = CheckSum & 0xFF;
 
 
-	return std::vector<uint8_t>(Data, Data + this->data_.DataLength + 2);
+	return std::vector<uint8_t>(Data, Data + this->datalength_ + 2);
 }
 
-bool RNetPacket::DoesMatch(uint8_t SeqNum) {
+std::vector<uint8_t> RNetPacket::Encode(void) {
 
-	return this->header_.SequenceNumber == SeqNum;
+	std::vector<uint8_t> vpacket;
+	std::vector<uint8_t> vdata;
 
+	vpacket = this->EncodeHeader();
+
+	if(this->datalength_ > 0)
+		vdata = this->EncodeData();
+
+	vpacket.insert(vpacket.end(), vdata.begin(), vdata.end());
+
+	return vpacket;
+}
+
+
+/*******************************************************************************
+ * Decoding methods
+ ******************************************************************************/
+
+void RNetPacket::DecodeHeader(std::vector<uint8_t> header) {
+	this->seqnum_		= (header.at(1) & 0xF8) >> 3;
+	this->startup_		= (header.at(1) & 0x4) >> 2;
+	this->type_			= (header.at(1) & 0x3);
+	this->datalength_	= header.at(2);
+}
+
+void RNetPacket::DecodeData(std::vector<uint8_t> data) {
+
+	this->datalength_ = data.size() - 2;
+	this->data_	= new uint8_t[this->datalength_];
+
+	for(auto i = 0; i<this->datalength_; i++)
+		this->data_[i] = data.at(i);
+}
+
+void RNetPacket::Decode(std::vector<uint8_t> packet) {
+
+	std::vector<uint8_t> vheader;
+	std::vector<uint8_t> vdata;
+
+	vheader.insert(vheader.end(), packet.begin(), packet.begin() + RNETPACKET_SIZE_HEADER);
+	vdata.insert(vdata.end(), packet.begin() + RNETPACKET_SIZE_HEADER, packet.end());
+
+	this->DecodeHeader(vheader);
+
+	if (vdata.size() > 0)
+		this->DecodeData(vdata);
+}
+
+/* Private methods */
+
+void RNetPacket::delete_data_array(void) {
+	if(this->data_ != nullptr) {
+		delete this->data_;
+	}
 }
 
 
@@ -166,10 +213,12 @@ void RNetPacket::DumpRaw(void) {
 
 	vpacket = this->Encode();
 
-	printf("[%2d] ", this->header_.SequenceNumber);
+	printf("== RNet Data Packet Raw ==\n");
+	printf("[%2d] ", this->seqnum_);
 	for(auto i=0; i<vpacket.size(); i++)
 		printf("%02x ", vpacket.at(i));
-
+	printf("\n");
+	printf("==========================\n");
 	printf("\n");
 }
 
@@ -177,17 +226,20 @@ void RNetPacket::Dump(void) {
 
 	printf("==== RNet Data Packet ====\n");
 	printf("+ Header               \n");
-	printf("|- Sequence Number: %2d\n", this->header_.SequenceNumber);
-	printf("|- Descriptor:      %2d\n", this->header_.Descriptor);
-	printf("|- Data length:     %2d\n", this->header_.DataLength);
+	printf("|- Sequence Number: %2d\n", this->seqnum_);
+	printf("|- Startup Flag:    %2d\n", this->startup_);
+	printf("|- Descriptor:      %2d\n", this->type_);
+	printf("|- Data length:     %2d\n", this->datalength_);
 	printf("+ Data                 \n");
-	if (this->header_.DataLength > 0) {
+	if (this->datalength_ > 0) {
 		printf("|- ");
-		for(auto i=0; i<this->header_.DataLength; i++) {
-				printf("%02x ", this->data_.Data[i]);
+		for(auto i=0; i<this->datalength_; i++) {
+				printf("%02x ", this->data_[i]);
 		}
 		printf("\n");
 	}
+	printf("==========================\n");
+	printf("\n");
 }
 
 }

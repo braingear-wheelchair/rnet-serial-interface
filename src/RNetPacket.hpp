@@ -3,25 +3,11 @@
 
 #include <vector>
 #include <string>
-#include "RNetDefinitions.hpp"
-#include "RNetUtility.hpp"
 
+#include "RNetDefinitions.hpp"
+#include "RNetChecksum.hpp"
 
 namespace rnetserial {
-
-struct PacketHeader {
-	bool		StartupFlag;
-	uint8_t		SequenceNumber;
-	uint8_t 	Descriptor;
-	uint8_t 	DataLength;
-	uint8_t 	CheckSum;
-};
-
-struct PacketData {
-	uint8_t*	Data;
-	uint8_t		DataLength;
-	uint16_t	CheckSum;
-};
 
 enum PacketType {ACKPACKET, NACKPACKET, DATAPACKET};
 
@@ -30,31 +16,43 @@ class RNetPacket {
 		RNetPacket(void);
 		~RNetPacket(void);
 
+		void Set(uint8_t SeqNum, uint8_t Type, uint8_t* Data, uint8_t DataLength, bool Startup = 0);
 
-		void SetHeader(uint8_t SeqNum, bool StartupFlag, uint8_t Descriptor, uint8_t DataLength);
-		void SetData(uint8_t* Message, uint8_t DataLength);
+		void	 SetStartupFlag(bool startup);
+		void	 SetSeqNum(uint8_t seqnum);
+		void	 SetType(uint8_t type);
+		void	 SetData(uint8_t* data, uint8_t datalength);
 
-		PacketHeader* GetHeader(void);
-		PacketData* GetData(void);
+		bool	 GetStartupFlag(void);
+		uint8_t  GetSeqNum(void);
+		uint8_t  GetType(void);
+		uint8_t  GetDataLength(void);
+		uint8_t* GetData(void);
 
+		bool IsType(uint8_t type);
+		bool IsSeqNum(uint8_t seqnum);
+		bool IsStartup(void);
+
+		std::vector<uint8_t> EncodeHeader(void);
+		std::vector<uint8_t> EncodeData(void);
 		std::vector<uint8_t> Encode(void);
-		void Decode(std::vector<uint8_t> packet);
 
-		bool DoesMatch(uint8_t SeqNum);
+		void DecodeHeader(std::vector<uint8_t> header);
+		void DecodeData(std::vector<uint8_t> data);
+		void Decode(std::vector<uint8_t> packet);
 
 		void DumpRaw(void);
 		void Dump(void);
 
-	protected:
-		std::vector<uint8_t> EncodeHeader(void);
-		std::vector<uint8_t> EncodeData(void);
-	
-		void DecodeHeader(std::vector<uint8_t> packet);
-		void DecodeData(std::vector<uint8_t> packet);
+	private:
+		void delete_data_array(void);
 
-	protected:
-		PacketHeader	header_;
-		PacketData		data_;
+	private:
+		bool		startup_;
+		uint8_t		seqnum_;
+		uint8_t 	type_;
+		uint8_t 	datalength_;
+		uint8_t*	data_;
 
 
 };
