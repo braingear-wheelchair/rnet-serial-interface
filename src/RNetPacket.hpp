@@ -16,18 +16,18 @@ class RNetPacket {
 		RNetPacket(void);
 		~RNetPacket(void);
 
-		void Set(uint8_t SeqNum, uint8_t Type, uint8_t* Data, uint8_t DataLength, bool Startup = 0);
+		void Set(uint8_t SeqNum, uint8_t Type, std::vector<uint8_t> Data, uint8_t DataLength, bool Startup = 0);
 
 		void	 SetStartupFlag(bool startup);
 		void	 SetSeqNum(uint8_t seqnum);
 		void	 SetType(uint8_t type);
-		void	 SetData(uint8_t* data, uint8_t datalength);
+		void	 SetData(std::vector<uint8_t> data, uint8_t datalength);
 
 		bool	 GetStartupFlag(void);
 		uint8_t  GetSeqNum(void);
 		uint8_t  GetType(void);
 		uint8_t  GetDataLength(void);
-		uint8_t* GetData(void);
+		std::vector<uint8_t> GetData(void);
 
 		bool IsType(uint8_t type);
 		bool IsSeqNum(uint8_t seqnum);
@@ -45,14 +45,11 @@ class RNetPacket {
 		void Dump(void);
 
 	private:
-		void delete_data_array(void);
-
-	private:
-		bool		startup_;
-		uint8_t		seqnum_;
-		uint8_t 	type_;
-		uint8_t 	datalength_;
-		uint8_t*	data_;
+		bool				 startup_;
+		uint8_t				 seqnum_;
+		uint8_t 			 type_;
+		uint8_t 			 datalength_;
+		std::vector<uint8_t> data_;
 
 
 };

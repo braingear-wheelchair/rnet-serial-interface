@@ -9,15 +9,15 @@ RNetPacket::RNetPacket(void) {
 	
 	// Initialize Data array
 	this->startup_		= 0;
-	this->data_			= nullptr;
 	this->datalength_	= 0;
 }
 
 RNetPacket::~RNetPacket(void) {
-	this->delete_data_array();
+	//delete[] this->data_;
+//	this->delete_data_array();
 }
 
-void RNetPacket::Set(uint8_t SeqNum, uint8_t Type, uint8_t* Data, uint8_t DataLength, bool Startup) {
+void RNetPacket::Set(uint8_t SeqNum, uint8_t Type, std::vector<uint8_t> Data, uint8_t DataLength, bool Startup) {
 	
 	// Packet setup
 	this->SetStartupFlag(Startup);
@@ -38,16 +38,15 @@ void RNetPacket::SetType(uint8_t type) {
 	this->type_ = type;
 }
 
-void RNetPacket::SetData(uint8_t* data, uint8_t datalength) {
+void RNetPacket::SetData(std::vector<uint8_t> data, uint8_t datalength) {
 
 	// Deleting current data array
-	this->delete_data_array();
-
+	//this->delete_data_array();
+	this->data_.clear();
 	this->datalength_ = datalength;
-	this->data_       = new uint8_t[datalength];
 
 	for(auto i=0; i<datalength; i++)
-		this->data_[i] = data[i];
+		this->data_.push_back(data.at(i));
 }
 
 bool RNetPacket::GetStartupFlag(void) {
@@ -66,7 +65,7 @@ uint8_t RNetPacket::GetDataLength(void) {
 	return this->datalength_;
 }
 
-uint8_t* RNetPacket::GetData(void) {
+std::vector<uint8_t> RNetPacket::GetData(void) {
 	return this->data_;
 }
 
@@ -135,10 +134,10 @@ std::vector<uint8_t> RNetPacket::EncodeData(void) {
 	uint8_t  Data[this->datalength_ + 2];
 	uint16_t CheckSum;
 
-	RNetChecksum::CRC16(&CheckSum, this->data_, this->datalength_);
+	RNetChecksum::CRC16(&CheckSum, this->data_.data(), this->datalength_);
 
 	for(auto i = 0; i<this->datalength_; i++) {
-		Data[i] = this->data_[i];
+		Data[i] = this->data_.at(i);
 	}
 
 	Data[this->datalength_]   = CheckSum >> 8;
@@ -178,10 +177,10 @@ void RNetPacket::DecodeHeader(std::vector<uint8_t> header) {
 void RNetPacket::DecodeData(std::vector<uint8_t> data) {
 
 	this->datalength_ = data.size() - 2;
-	this->data_	= new uint8_t[this->datalength_];
+	this->data_.clear();
 
 	for(auto i = 0; i<this->datalength_; i++)
-		this->data_[i] = data.at(i);
+		this->data_.push_back(data.at(i));
 }
 
 void RNetPacket::Decode(std::vector<uint8_t> packet) {
@@ -197,15 +196,6 @@ void RNetPacket::Decode(std::vector<uint8_t> packet) {
 	if (vdata.size() > 0)
 		this->DecodeData(vdata);
 }
-
-/* Private methods */
-
-void RNetPacket::delete_data_array(void) {
-	if(this->data_ != nullptr) {
-		delete this->data_;
-	}
-}
-
 
 void RNetPacket::DumpRaw(void) {
 
@@ -234,7 +224,7 @@ void RNetPacket::Dump(void) {
 	if (this->datalength_ > 0) {
 		printf("|- ");
 		for(auto i=0; i<this->datalength_; i++) {
-				printf("%02x ", this->data_[i]);
+				printf("%02x ", this->data_.at(i));
 		}
 		printf("\n");
 	}

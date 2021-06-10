@@ -12,21 +12,12 @@ int main(int argc, char** argv) {
 
 	std::vector<uint8_t> rmessage;
 
-	uint8_t MessageLength = 5;
-	uint8_t Message[MessageLength];
 
-	uint8_t vx = 10;
-	uint8_t vy = 20;
-
-	Message[0] = 0x0b;
-	Message[1] = 0x00;
-	Message[2] = 0x00;
-	Message[3] = (uint8_t)vx;
-	Message[4] = (uint8_t)vy;	
+	std::vector<uint8_t> Message = {0x0b, 0x00, 0x00, 0x10, 0x20};
 
 	printf("+ Setting RNet packet with increasing sequence number...\n");
 	for (auto i = 0; i<5; i++) {
-		packet1.Set(i, rnetserial::DATAPACKET, Message, MessageLength);
+		packet1.Set(i, rnetserial::DATAPACKET, Message, Message.size());
 	}
 
 	printf("+ Dumping the last message:\n");
