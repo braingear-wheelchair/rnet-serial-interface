@@ -13,8 +13,6 @@ RNetPacket::RNetPacket(void) {
 }
 
 RNetPacket::~RNetPacket(void) {
-	//delete[] this->data_;
-//	this->delete_data_array();
 }
 
 void RNetPacket::Set(uint8_t SeqNum, uint8_t Type, std::vector<uint8_t> Data, uint8_t DataLength, bool Startup) {
