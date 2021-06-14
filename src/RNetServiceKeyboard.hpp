@@ -10,6 +10,8 @@
 #include <thread>
 #include <chrono>
 #include <unistd.h>
+#include <mutex>
+#include <fcntl.h>
 
 #include "RNetService.hpp"
 
@@ -33,6 +35,7 @@ class RNetServiceKeyboard : public RNetService {
 		int peek_character;
 		int key_;
 		termios term_;
+		std::mutex kmutex_;
 
 };
 

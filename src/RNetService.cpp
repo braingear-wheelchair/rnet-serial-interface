@@ -6,14 +6,18 @@
 namespace rnetserial {
 
 RNetService::RNetService(void) {
+	this->mutex_.lock();
 	this->run_ = false;
+	this->mutex_.unlock();
 }
 
 RNetService::~RNetService(void) {
-	if(this->IsRunning() == true) {
-		this->Stop();
-	}
-	this->Join();
+	//bool isrunning = this->IsRunning();
+	//if(isrunning == true) {
+	//	this->Stop();
+	//}
+	//this->Stop();
+	//this->Join();
 }
 
 void RNetService::Start(void) {
@@ -23,23 +27,31 @@ void RNetService::Start(void) {
 		this->Join();
 	}
 
+	this->mutex_.lock();
 	this->thread_ = std::thread(&RNetService::Run, this);
 	this->run_ = true;
+	this->mutex_.unlock();
 	
 }
 
 void RNetService::Stop(void) {
-	if(this->IsRunning() == true) {
-		this->run_ = false;
-	}
+	this->mutex_.lock();
+	this->run_ = false;
+	this->mutex_.unlock();
 }
 
 bool RNetService::IsRunning(void) {
-	return this->run_;
+	bool ret = false;
+	this->mutex_.lock();
+	ret = this->run_;
+	this->mutex_.unlock();
+	return ret;
 }
 
 void RNetService::Join(void) {
+	this->mutex_.lock();
 	this->thread_.join();
+	this->mutex_.unlock();
 }
 
 }

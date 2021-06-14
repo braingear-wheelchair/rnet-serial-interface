@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 	rnetserial::RNetSerialRx SrvSerialRx(&rnet, &rx);
 	rnetserial::RNetSerialTx SrvSerialTx(&rnet, &tx);
 	rnetserial::RNetServiceRx SrvRx(&tx, &rx);
-	rnetserial::RNetServiceXY SrvXY(&rnet, &tx, &rx);
+	rnetserial::RNetServiceXY SrvXY(&tx, &rx);
 	rnetserial::RNetServiceKeyboard SrvKey;
 
 
@@ -72,11 +72,10 @@ int main(int argc, char** argv) {
 	SrvSerialRx.Start();
 	SrvSerialTx.Start();
 	SrvRx.Start();
-
 	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	
 	SrvXY.Start();
 	SrvKey.Start();
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
 	
 	int key;
@@ -122,20 +121,47 @@ int main(int argc, char** argv) {
 
 
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 
 
 
 
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+	printf("Stopping threads...");
+	SrvKey.Stop();
 	SrvRx.Stop();
 	SrvXY.Stop();
-	SrvKey.Stop();
 	SrvSerialRx.Stop();
 	SrvSerialTx.Stop();
-	rnet.ClosePort();
+	printf("done!\n");
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+	printf("SrvRx joining...");
+	SrvRx.Join();
+	printf("done!\n");
+	
+	printf("SerialRx joining...");
+	SrvSerialRx.Join();
+	printf("done!\n");
+	
+	printf("SerialTx joining...");
+	SrvSerialTx.Join();
+	printf("done!\n");
+	
+	printf("SrvXY joining...");
+	SrvXY.Join();
+	printf("done!\n");
+
+	printf("Key joining...\n");
+	SrvKey.Join();
+	printf("done!\n");
+
+	//printf("Closing port..\n");
+	//rnet.ClosePort();
+	//printf("Port closed\n");
+
+	
 
 	return 0;
 }

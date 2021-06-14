@@ -5,8 +5,7 @@
 
 namespace rnetserial {
 
-RNetServiceXY::RNetServiceXY(RNetSerial* serial, RNetBuffer* TxBuffer, RNetBuffer* RxBuffer) {
-	this->serial_ = serial;
+RNetServiceXY::RNetServiceXY(RNetBuffer* TxBuffer, RNetBuffer* RxBuffer) {
 	this->tx_ = TxBuffer;
 	this->rx_ = RxBuffer;
 	this->SetVelocity(0, 0);
@@ -21,7 +20,7 @@ void RNetServiceXY::Run(void) {
 	std::vector<uint8_t> vmsg;
 	uint8_t SeqNum;
 
-	printf("GENERIC XY SERVICE IS RUNNING\n\n");
+	printf("XY SERVICE IS RUNNING\n\n");
 	while(this->IsRunning()) {
 
 		
@@ -29,9 +28,7 @@ void RNetServiceXY::Run(void) {
 		vmsg = this->vmsg_;
 		this->mutex_.unlock();
 
-		this->serial_->Lock();	
-		SeqNum = this->serial_->GetSequence();
-		this->serial_->Unlock();
+		SeqNum = RNetCounter::Instance().Get();
 		
 		Vxy.Set(SeqNum, PacketType::DATAPACKET, vmsg, vmsg.size());
 		//Vxy.DumpRaw();
@@ -42,12 +39,10 @@ void RNetServiceXY::Run(void) {
 
 		this->WaitForAck(SeqNum);
 		
-		this->serial_->Lock();	
-		this->serial_->IncrementSequence();
-		this->serial_->Unlock();
+		RNetCounter::Instance().Increment();
 	}
 	
-	printf("GENERIC XY SERVICE IS NOT RUNNING\n\n");
+	printf("XY SERVICE IS NOT RUNNING\n\n");
 
 }
 
@@ -64,12 +59,15 @@ void RNetServiceXY::SetVelocity(int8_t vx, int8_t vy) {
 
 }
 
-bool RNetServiceXY::WaitForAck(uint8_t SeqNum) {
+bool RNetServiceXY::WaitForAck(uint8_t SeqNum, unsigned int timeout) {
 
 	bool found = false;
 	unsigned int index;
 
-	while(found == false) {
+	timer_msecs timer;
+
+	timer.tic();
+	while(found == false && timer.toc() < timeout) {
 
 		this->rx_->Lock();
 		for(auto it = this->rx_->Begin(); it != this->rx_->End(); it++) {

@@ -2,6 +2,7 @@
 #define RNETSERVICE_HPP
 
 #include <chrono>
+#include <mutex>
 #include <thread>
 
 namespace rnetserial {
@@ -21,6 +22,7 @@ class RNetService {
 	private:
 		bool run_;
 		std::thread thread_;
+		std::mutex mutex_;
 
 
 };

@@ -10,14 +10,14 @@ RNetSerial::RNetSerial(const std::string name) {
 	this->mutex_.lock();
 
 	this->name_			 = name;
-	this->sequence_number_ = 0;
+	//this->sequence_number_ = 0;
 
 	this->mutex_.unlock();
 }
 
 RNetSerial::~RNetSerial(void) {
 	this->mutex_.lock();
-	if(this->IsOpen())
+	if(LibSerial::SerialPort::IsOpen())
 		this->Close();
 	this->mutex_.unlock();
 }
@@ -58,9 +58,19 @@ bool RNetSerial::OpenPort(const std::string port) {
 	return OpenRes & SetRes;
 }
 
+bool RNetSerial::IsOpen(void) {
+	bool ret = false;
+
+	this->mutex_.lock();
+	ret = LibSerial::SerialPort::IsOpen();
+	this->mutex_.unlock();
+
+	return ret;
+}
+
 void RNetSerial::ClosePort(void) {
 	this->mutex_.lock();
-	this->Close();
+	LibSerial::SerialPort::Close();
 	this->mutex_.unlock();
 }
 
@@ -78,7 +88,8 @@ bool RNetSerial::Connect(int timeout) {
 	// Start startup sequence: Write Startup -> Wait for Ack -> Check Ack -> Write Ack
 	this->Lock();
 		// Create startup packet
-		Startup.Set(this->GetSequence(), PacketType::DATAPACKET, StartupMessage, StartupMessage.size(), 1);
+		//Startup.Set(this->GetSequence(), PacketType::DATAPACKET, StartupMessage, StartupMessage.size(), 1);
+		Startup.Set(RNetCounter::Instance().Get(), PacketType::DATAPACKET, StartupMessage, StartupMessage.size(), 1);
 		//Startup.SetHeader(this->GetSequence(), RNETPACKET_STARTUP_FLAG, 
 		//				  PacketType::DATAPACKET, RNETPACKET_STARTUP_SIZE);
 		//Startup.SetData(StartupMessage, RNETPACKET_STARTUP_SIZE);
@@ -98,20 +109,23 @@ bool RNetSerial::Connect(int timeout) {
 		
 		// Check Ack
 		//if(AckRx.DoesMatch(this->GetSequence()) == false) {
-		if(AckRx.GetSeqNum() != this->GetSequence()) {
+		//if(AckRx.GetSeqNum() != this->GetSequence()) {
+		if(AckRx.GetSeqNum() != RNetCounter::Instance().Get()) {
 			printf("[%s] Error acknowledge packet (SN=%d) does not match with "
 				   "the current sequence number (SN=%d).\n", this->name().c_str(), 
-					AckRx.GetSeqNum(), this->GetSequence());
+					AckRx.GetSeqNum(), RNetCounter::Instance().Get());
 			return false;
 		}
 
 		// Write ACK packet
 		//AckTx.SetHeader(this->GetSequence(), 0, PacketType::ACKPACKET, 0);
-		AckTx.Set(this->GetSequence(), PacketType::ACKPACKET, ackdata, 0);
+		//AckTx.Set(this->GetSequence(), PacketType::ACKPACKET, ackdata, 0);
+		AckTx.Set(RNetCounter::Instance().Get(), PacketType::ACKPACKET, ackdata, 0);
 		this->WritePacket(AckTx);
 	
 		// Increment sequence
-		this->IncrementSequence();
+		//this->IncrementSequence();
+		RNetCounter::Instance().Increment();
 	this->Unlock();
 
 	return true;
@@ -371,27 +385,27 @@ const std::string RNetSerial::name(void) {
 	return name;
 }
 
-uint8_t RNetSerial::GetSequence(void) {
-	uint8_t SeqNum;
-	
-	SeqNum = this->sequence_number_;
+//uint8_t RNetSerial::GetSequence(void) {
+//	uint8_t SeqNum;
+//	
+//	SeqNum = this->sequence_number_;
+//
+//	return SeqNum;
+//
+//}
+//
+//void RNetSerial::SetSequence(uint8_t SeqNum) {
+//
+//	this->sequence_number_ = SeqNum;
+//
+//}
 
-	return SeqNum;
-
-}
-
-void RNetSerial::SetSequence(uint8_t SeqNum) {
-
-	this->sequence_number_ = SeqNum;
-
-}
-
-void RNetSerial::IncrementSequence(void) {
-
-	this->sequence_number_++;
-	if(this->sequence_number_ > 31)
-		this->sequence_number_ = 0;
-}
+//void RNetSerial::IncrementSequence(void) {
+//
+//	this->sequence_number_++;
+//	if(this->sequence_number_ > 31)
+//		this->sequence_number_ = 0;
+//}
 
 void RNetSerial::Lock(void) {
 	this->mutex_.lock();

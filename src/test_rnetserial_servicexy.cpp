@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
 	rnetserial::RNetSerialRx SrvSerialRx(&rnet, &rx);
 	rnetserial::RNetSerialTx SrvSerialTx(&rnet, &tx);
 	rnetserial::RNetServiceRx SrvRx(&tx, &rx);
-	rnetserial::RNetServiceXY SrvXY(&rnet, &tx, &rx);
+	rnetserial::RNetServiceXY SrvXY(&tx, &rx);
 
 
 	if(rnet.OpenPort(port) == false) {

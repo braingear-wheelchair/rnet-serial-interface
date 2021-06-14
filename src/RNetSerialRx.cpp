@@ -22,7 +22,7 @@ void RNetSerialRx::Run(void) {
 	bool isnew;
 	printf("Serial RX SERVICE IS RUNNING\n\n");
 
-	while(this->IsRunning()) {
+	while(this->IsRunning() && this->serial_->IsOpen()) {
 
 
 		this->serial_->Lock();
