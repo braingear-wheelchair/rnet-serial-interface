@@ -7,7 +7,7 @@
 #include "RNetDefinitions.hpp"
 #include "RNetChecksum.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 enum PacketType {ACKPACKET, NACKPACKET, DATAPACKET};
 

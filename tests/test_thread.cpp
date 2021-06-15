@@ -2,7 +2,7 @@
 #include <iostream>
 #include "RNetService.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 class ServiceA: public RNetService {
 
@@ -40,8 +40,8 @@ class ServiceA: public RNetService {
 int main(int argc, char** argv) {
 
 
-	rnetserial::ServiceA SrvA;
-	rnetserial::ServiceA SrvB;
+	rnet::ServiceA SrvA;
+	rnet::ServiceA SrvB;
 
 
 	SrvA.Start();

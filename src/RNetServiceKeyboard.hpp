@@ -15,7 +15,7 @@
 
 #include "RNetService.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 class RNetServiceKeyboard : public RNetService {
 	public:

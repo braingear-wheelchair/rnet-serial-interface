@@ -3,7 +3,7 @@
 
 #include "RNetCounter.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 RNetCounter::RNetCounter(void) {
 	this->counter_ = 0;;

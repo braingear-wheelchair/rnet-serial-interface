@@ -8,7 +8,7 @@
 #include "RNetDefinitions.hpp"
 #include "RNetChecksum.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 class RNetUtility {
 	public:

@@ -12,19 +12,18 @@
 #include "RNetPacket.hpp"
 #include "RNetUtility.hpp"
 #include "RNetCounter.hpp"
-//#include "RNetTimer.hpp"
 
 
-namespace rnetserial {
+namespace rnet {
 
 
 class RNetSerial : protected LibSerial::SerialPort {
 	public:
-		RNetSerial(const std::string name = "rnetserial");
+		RNetSerial(const std::string name = "rnet");
 		~RNetSerial(void);
 
-		bool OpenPort(const std::string port);
-		void ClosePort(void);
+		bool Open(const std::string port);
+		void Close(void);
 		bool Connect(int timeout = -1);
 		bool IsOpen(void);
 
@@ -32,30 +31,19 @@ class RNetSerial : protected LibSerial::SerialPort {
 		bool WritePacket(RNetPacket& packet);
 		bool ReadPacket(RNetPacket& packet);
 		
-		//bool ReadPacket(RNetPacket& packet, size_t NBytes, size_t Timeout);
 
-	
-		//bool WaitForAck(uint8_t SeqNum, int timeout = RNETCOMM_ACKTIMEOUT);	
-
-		bool SendVelocity(int8_t vx, int8_t vy);
 		void Shutdown(void);
 	
-		//void SetSequence(uint8_t SeqNum);
-		//uint8_t GetSequence(void);
 
 		const std::string name(void);
 
 		void Lock();
 		void Unlock();
-		//void IncrementSequence(void);
 	protected:
 
 	private:
 		std::string port_;
 		std::string name_;
-
-		//uint8_t sequence_number_;
-
 		std::mutex	mutex_;
 
 };

@@ -4,7 +4,7 @@
 #include "RNetServiceKeyboard.hpp"
 
 
-namespace rnetserial {
+namespace rnet {
 
 RNetServiceKeyboard::RNetServiceKeyboard(void) {
 	int flags = fcntl(0, F_GETFL, 0);

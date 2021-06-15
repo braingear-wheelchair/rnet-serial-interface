@@ -5,15 +5,15 @@
 int main(int argc, char** argv) {
 
 
-	rnetserial::RNetPacket packet1;
-	rnetserial::RNetBuffer buffer;
+	rnet::RNetPacket packet1;
+	rnet::RNetBuffer buffer;
 
 	std::vector<uint8_t> Message = {0x0b, 0x00, 0x00, 0x10, 0x20};
 
 	
 	printf("+ Adding to buffer RNet packet with increasing sequence number...\n");
 	for (auto i=0; i<5; i++) {
-		packet1.Set(i, rnetserial::DATAPACKET, Message, Message.size());
+		packet1.Set(i, rnet::DATAPACKET, Message, Message.size());
 		buffer.Add(packet1);
 	}
 

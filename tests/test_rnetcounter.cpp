@@ -5,8 +5,8 @@
 
 int main(int argc, char** argv) {
 
-	rnetserial::RNetCounter* counter1;
-	rnetserial::RNetCounter* counter2;
+	rnet::RNetCounter* counter1;
+	rnet::RNetCounter* counter2;
 
 	printf("Increment counter instance 1...\n");
 	counter1->Instance().Increment();

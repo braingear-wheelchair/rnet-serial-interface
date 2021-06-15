@@ -3,7 +3,7 @@
 
 #include "RNetBuffer.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 RNetBuffer::RNetBuffer(void) {
 }

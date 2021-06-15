@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-namespace rnetserial {
+namespace rnet {
 
 class RNetCounter {
 	public:

@@ -3,7 +3,7 @@
 
 #include "RNetServiceXY.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 RNetServiceXY::RNetServiceXY(RNetBuffer* TxBuffer, RNetBuffer* RxBuffer) {
 	this->tx_ = TxBuffer;

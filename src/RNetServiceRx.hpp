@@ -4,7 +4,7 @@
 #include "RNetService.hpp"
 #include "RNetBuffer.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 class RNetServiceRx : public RNetService {
 	public:

@@ -7,8 +7,8 @@ int main(int argc, char** argv) {
 
 
 	
-	rnetserial::RNetPacket packet1;
-	rnetserial::RNetPacket packet2;
+	rnet::RNetPacket packet1;
+	rnet::RNetPacket packet2;
 
 	std::vector<uint8_t> rmessage;
 
@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
 
 	printf("+ Setting RNet packet with increasing sequence number...\n");
 	for (auto i = 0; i<5; i++) {
-		packet1.Set(i, rnetserial::DATAPACKET, Message, Message.size());
+		packet1.Set(i, rnet::DATAPACKET, Message, Message.size());
 	}
 
 	printf("+ Dumping the last message:\n");

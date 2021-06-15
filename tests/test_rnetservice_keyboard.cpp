@@ -5,7 +5,7 @@
 #define KEY_QUIT		'q'
 
 int main(int argc, char** argv) {
-	rnetserial::RNetServiceKeyboard SrvKey;
+	rnet::RNetServiceKeyboard SrvKey;
 
 
 	SrvKey.Start();

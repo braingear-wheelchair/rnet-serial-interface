@@ -4,11 +4,11 @@
 #include "RNetBuffer.hpp"
 #include "RNetServiceRx.hpp"
 #include "RNetServiceXY.hpp"
-#include "RNetSerialRx.hpp"
-#include "RNetSerialTx.hpp"
+#include "RNetReceiver.hpp"
+#include "RNetTrasmitter.hpp"
 #include "RNetSerial.hpp"
 
-void dump_buffer(rnetserial::RNetBuffer& buff) {
+void dump_buffer(rnet::RNetBuffer& buff) {
 
 	buff.Lock();
 	for(auto it=buff.Begin(); it != buff.End(); it++)
@@ -35,16 +35,16 @@ int main(int argc, char** argv) {
         }
     }
 	
-	rnetserial::RNetSerial rnet;
-	rnetserial::RNetBuffer tx;
-	rnetserial::RNetBuffer rx;
-	rnetserial::RNetSerialRx SrvSerialRx(&rnet, &rx);
-	rnetserial::RNetSerialTx SrvSerialTx(&rnet, &tx);
-	rnetserial::RNetServiceRx SrvRx(&tx, &rx);
-	rnetserial::RNetServiceXY SrvXY(&tx, &rx);
+	rnet::RNetSerial rnet;
+	rnet::RNetBuffer tx;
+	rnet::RNetBuffer rx;
+	rnet::RNetReceiver SrvSerialRx(&rnet, &rx);
+	rnet::RNetTrasmitter SrvSerialTx(&rnet, &tx);
+	rnet::RNetServiceRx SrvRx(&tx, &rx);
+	rnet::RNetServiceXY SrvXY(&tx, &rx);
 
 
-	if(rnet.OpenPort(port) == false) {
+	if(rnet.Open(port) == false) {
 		printf("[%s] Serial port \"%s\" is NOT open.\n", rnet.name().c_str(), port.c_str());
 		return EXIT_FAILURE;
 	}
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 	SrvXY.Stop();
 	SrvSerialRx.Stop();
 	SrvSerialTx.Stop();
-	rnet.ClosePort();
+	rnet.Close();
 
 	return 0;
 }

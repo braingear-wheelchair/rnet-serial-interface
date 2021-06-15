@@ -4,7 +4,7 @@
 #include "RNetBuffer.hpp"
 #include "RNetServiceRx.hpp"
 
-void dump_buffer(rnetserial::RNetBuffer& buff) {
+void dump_buffer(rnet::RNetBuffer& buff) {
 
 	buff.Lock();
 	for(auto it=buff.Begin(); it != buff.End(); it++)
@@ -17,10 +17,10 @@ void dump_buffer(rnetserial::RNetBuffer& buff) {
 int main(int argc, char** argv) {
 
 
-	rnetserial::RNetPacket packet1;
-	rnetserial::RNetBuffer tx;
-	rnetserial::RNetBuffer rx;
-	rnetserial::RNetServiceRx SrvRx(&tx, &rx);
+	rnet::RNetPacket packet1;
+	rnet::RNetBuffer tx;
+	rnet::RNetBuffer rx;
+	rnet::RNetServiceRx SrvRx(&tx, &rx);
 
 	std::vector<uint8_t> Message = {0x0b, 0x00, 0x00, 0x10, 0x20};
 	int n;
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
 		std::cin.ignore(1);
 		std::cin >> n;
 
-		packet1.Set(iter, rnetserial::PacketType::DATAPACKET, Message, Message.size());
+		packet1.Set(iter, rnet::PacketType::DATAPACKET, Message, Message.size());
 		rx.Lock();
 		rx.Add(packet1);
 		rx.Unlock();

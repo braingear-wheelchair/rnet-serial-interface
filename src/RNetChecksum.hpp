@@ -4,7 +4,7 @@
 #include <string>
 #include "RNetDefinitions.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 class RNetChecksum {
 	public:

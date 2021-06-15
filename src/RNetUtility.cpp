@@ -3,7 +3,7 @@
 
 #include "RNetUtility.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 bool RNetUtility::GetStartupFlag(const std::vector<uint8_t>& raw) {
 	if(raw.size() < RNETPACKET_SIZE_HEADER) {

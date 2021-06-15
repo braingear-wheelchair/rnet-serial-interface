@@ -5,7 +5,7 @@
 #include <mutex>
 #include "RNetPacket.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 class RNetBuffer {
 

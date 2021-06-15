@@ -1,4 +1,5 @@
 ACLOCAL_AMFLAGS=-I m4
-SUBDIRS = src
+SUBDIRS = src \
+		  tests
  
 doc_DATA = AUTHORS NEWS README COPYING

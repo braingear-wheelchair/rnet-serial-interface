@@ -7,7 +7,7 @@
 #include "RNetBuffer.hpp"
 #include "RNetTimer.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 class RNetServiceXY : public RNetService {
 	public:

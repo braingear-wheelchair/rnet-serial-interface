@@ -3,7 +3,7 @@
 
 #include "RNetService.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 RNetService::RNetService(void) {
 	this->mutex_.lock();

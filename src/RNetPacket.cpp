@@ -3,7 +3,7 @@
 
 #include "RNetPacket.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 RNetPacket::RNetPacket(void) {
 	

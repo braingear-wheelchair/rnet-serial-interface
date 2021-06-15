@@ -3,7 +3,7 @@
 
 #include "RNetChecksum.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 void RNetChecksum::CRC8(uint8_t* pChecksum, const uint8_t* pBlock, uint32_t size) {
 	

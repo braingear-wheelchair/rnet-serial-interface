@@ -5,7 +5,7 @@
 #include <mutex>
 #include <thread>
 
-namespace rnetserial {
+namespace rnet {
 
 class RNetService {
 	
