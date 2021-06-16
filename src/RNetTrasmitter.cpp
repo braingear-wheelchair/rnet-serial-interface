@@ -8,6 +8,7 @@ namespace rnet {
 
 RNetTrasmitter::RNetTrasmitter(RNetSerial* serial, RNetBuffer* TxBuffer) {
 
+	this->name_   = "rnet_trasmitter";
 	this->serial_ = serial;
 	this->tx_     = TxBuffer;
 }
@@ -19,7 +20,7 @@ void RNetTrasmitter::Run(void) {
 
 	RNetPacket PktRx;
 	
-	printf("Serial TX SERVICE IS RUNNING\n\n");
+	printf("[%s] Service is up\n", this->name().c_str());
 
 	while(this->IsRunning() && this->serial_->IsOpen()) {
 
@@ -28,12 +29,7 @@ void RNetTrasmitter::Run(void) {
 
 		this->tx_->Lock();
 
-		//if (this->tx_->Size() > 0) {
-		//	printf("Sending the following packets:\n");
-		//}
-
 		for(auto it=this->tx_->Begin(); it != this->tx_->End(); it++) {
-			//it->DumpRaw();
 			this->serial_->WritePacket(*it);
 		}
 	
@@ -46,7 +42,7 @@ void RNetTrasmitter::Run(void) {
 
 
 	}
-	printf("Serial TX SERVICE IS NOT RUNNING\n\n");
+	printf("[%s] Service is down\n", this->name().c_str());
 	
 
 }

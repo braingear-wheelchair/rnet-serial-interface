@@ -1,5 +1,7 @@
 lib_LTLIBRARIES = librnetserial.la
 
+bin_PROGRAMS = rnet_keyboard_control
+
 librnetserial_includedir = $(includedir)/rnetserial
 
 librnetserial_include_HEADERS = RNetDefinitions.hpp \
@@ -34,3 +36,7 @@ librnetserial_la_LIBADD = -lserial
 
 librnetserial_la_LDFLAGS = $(AM_CFLAGS) \
 						   -version-info $(CURRENT):$(REVISION):$(AGE)
+
+
+rnet_keyboard_control_SOURCES = rnet_keyboard_control.cpp
+rnet_keyboard_control_LDADD   = $(top_builddir)/src/librnetserial.la

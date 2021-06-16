@@ -8,6 +8,7 @@ namespace rnet {
 
 RNetReceiver::RNetReceiver(RNetSerial* serial, RNetBuffer* RxBuffer) {
 
+	this->name_   = "rnet_receiver";
 	this->serial_ = serial;
 	this->rx_     = RxBuffer;
 }
@@ -20,7 +21,8 @@ void RNetReceiver::Run(void) {
 	RNetPacket PktRx;
 
 	bool isnew;
-	printf("Serial RX SERVICE IS RUNNING\n\n");
+	
+	printf("[%s] Service is up\n", this->name().c_str());
 
 	while(this->IsRunning() && this->serial_->IsOpen()) {
 
@@ -38,10 +40,9 @@ void RNetReceiver::Run(void) {
 		}
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(5));
-
-
 	}
-	printf("Serial RX SERVICE IS NOT RUNNING\n\n");
+	
+	printf("[%s] Service is down\n", this->name().c_str());
 	
 
 }

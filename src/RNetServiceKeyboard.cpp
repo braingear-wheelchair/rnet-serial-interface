@@ -7,6 +7,8 @@
 namespace rnet {
 
 RNetServiceKeyboard::RNetServiceKeyboard(void) {
+	this->name_ = "rnet_service_keyboard";
+
 	int flags = fcntl(0, F_GETFL, 0);
 	fcntl(0, F_SETFL, flags | O_NONBLOCK); 
 }
@@ -22,7 +24,9 @@ void RNetServiceKeyboard::Run(void) {
 
 	char key;
 	bool isrunning = true;
-	printf("KEY SERVICE IS RUNNING\n\r");
+	
+	printf("[%s] Service is up\n", this->name().c_str());
+	
 	this->kmutex_.lock();
 	this->enable_raw_mode();
 	this->kmutex_.unlock();
@@ -42,14 +46,13 @@ void RNetServiceKeyboard::Run(void) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 
-	printf("\nOut while\n");
 	this->kmutex_.lock();
 	this->disable_raw_mode();
 	this->kmutex_.unlock();
 	tcflush(0, TCIFLUSH);
 	tcflush(0, TCOFLUSH);
 	
-	printf("KEY SERVICE IS NOT RUNNING\n");
+	printf("[%s] Service is down\n", this->name().c_str());
 
 }
 

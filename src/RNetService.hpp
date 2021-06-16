@@ -18,7 +18,10 @@ class RNetService {
 		void Stop(void);
 		void Join(void);
 		bool IsRunning(void);
+		std::string name(void);
 
+	protected:
+		std::string name_;
 	private:
 		bool run_;
 		std::thread thread_;

@@ -6,6 +6,7 @@
 namespace rnet {
 
 RNetServiceRx::RNetServiceRx(RNetBuffer* TxBuffer, RNetBuffer* RxBuffer) {
+	this->name_ = "rnet_service_receiver";
 	this->tx_ = TxBuffer;
 	this->rx_ = RxBuffer;
 }
@@ -19,7 +20,7 @@ void RNetServiceRx::Run(void) {
 	std::vector<uint8_t> ackdata;
 	std::vector<uint8_t> todelete;
 
-	printf("GENERIC RX SERVICE IS RUNNING\n\n");
+	printf("[%s] Service is up\n", this->name().c_str());
 	while(this->IsRunning()) {
 
 		// Clear local list of element to be deleted
@@ -31,7 +32,6 @@ void RNetServiceRx::Run(void) {
 		// Iterate for every element of the Rx Buffer
 		for(auto it=this->rx_->Begin(); it != this->rx_->End(); it++) {
 	
-		//	it->DumpRaw();
 			// If the element has DATAPACKET type then add a ACK packet to Tx
 			// Buffer
 			if(it->GetType() == PacketType::DATAPACKET) {
@@ -62,7 +62,7 @@ void RNetServiceRx::Run(void) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 
-	printf("GENERIC RX SERVICE IS NOT RUNNING\n\n");
+	printf("[%s] Service is down\n", this->name().c_str());
 
 }
 

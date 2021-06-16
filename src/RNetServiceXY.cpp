@@ -6,6 +6,7 @@
 namespace rnet {
 
 RNetServiceXY::RNetServiceXY(RNetBuffer* TxBuffer, RNetBuffer* RxBuffer) {
+	this->name_ = "rnet_service_xy";
 	this->tx_ = TxBuffer;
 	this->rx_ = RxBuffer;
 	this->SetVelocity(0, 0);
@@ -20,7 +21,7 @@ void RNetServiceXY::Run(void) {
 	std::vector<uint8_t> vmsg;
 	uint8_t SeqNum;
 
-	printf("XY SERVICE IS RUNNING\n\n");
+	printf("[%s] Service is up\n", this->name().c_str());
 	while(this->IsRunning()) {
 
 		
@@ -42,7 +43,7 @@ void RNetServiceXY::Run(void) {
 		RNetCounter::Instance().Increment();
 	}
 	
-	printf("XY SERVICE IS NOT RUNNING\n\n");
+	printf("[%s] Service is down\n", this->name().c_str());
 
 }
 
