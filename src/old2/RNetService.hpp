@@ -2,10 +2,9 @@
 #define RNETSERVICE_HPP
 
 #include <chrono>
-#include <mutex>
 #include <thread>
 
-namespace rnet {
+namespace rnetserial {
 
 class RNetService {
 	
@@ -18,14 +17,10 @@ class RNetService {
 		void Stop(void);
 		void Join(void);
 		bool IsRunning(void);
-		std::string name(void);
 
-	protected:
-		std::string name_;
 	private:
 		bool run_;
 		std::thread thread_;
-		std::mutex mutex_;
 
 
 };

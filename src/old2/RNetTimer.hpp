@@ -3,7 +3,7 @@
 
 #include <chrono>
 
-namespace rnet {
+namespace rnetserial {
 
 using std::chrono::hours;
 using std::chrono::minutes;

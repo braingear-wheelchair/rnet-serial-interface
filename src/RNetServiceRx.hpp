@@ -1,28 +1,25 @@
 #ifndef RNETSERVICE_RX_HPP
 #define RNETSERVICE_RX_HPP
 
-#include "RNetDefinitions.hpp"
 #include "RNetService.hpp"
-#include "RNetSerial.hpp"
-#include "RNetPacket.hpp"
-#include "RNetUtility.hpp"
+#include "RNetBuffer.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 class RNetServiceRx : public RNetService {
-
 	public:
-		RNetServiceRx(RNetSerial* serial);
+		RNetServiceRx(RNetBuffer* TxBuffer, RNetBuffer* RxBuffer);
 		~RNetServiceRx(void);
 
 		void Run(void);
 
-
-	protected:
-		RNetSerial* serial_;
-
+	private:
+		RNetBuffer* tx_;
+		RNetBuffer* rx_;
 };
 
+
 }
+
 
 #endif

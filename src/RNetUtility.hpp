@@ -6,8 +6,9 @@
 #include <exception>
 #include <iostream>
 #include "RNetDefinitions.hpp"
+#include "RNetChecksum.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 class RNetUtility {
 	public:
@@ -19,9 +20,6 @@ class RNetUtility {
 
 		static bool IsHeaderValid(const std::vector<uint8_t>& raw);
 		static bool IsDataValid(const std::vector<uint8_t>& raw);
-
-		static void CRC8(uint8_t* pChecksum, const uint8_t* pBlock, uint32_t size);
-		static void CRC16(uint16_t* pChecksum, const uint8_t* pBlock, uint32_t size);
 
 };
 

@@ -3,7 +3,7 @@
 
 #include "RNetUtility.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 bool RNetUtility::GetStartupFlag(const std::vector<uint8_t>& raw) {
 	if(raw.size() < RNETPACKET_SIZE_HEADER) {
@@ -62,7 +62,7 @@ bool RNetUtility::IsHeaderValid(const std::vector<uint8_t>& raw) {
 		return false;
 
 	// Check header checksum
-	RNetUtility::CRC8(&hchecksum, hdata, 2);	
+	RNetChecksum::CRC8(&hchecksum, hdata, 2);	
 	if(raw.at(3) != hchecksum)
 		return false;
 
@@ -89,7 +89,7 @@ bool RNetUtility::IsDataValid(const std::vector<uint8_t>& raw) {
 		pdata[i] = raw.at(i);
 
 	rchecksum = ((uint16_t)raw.at(DataLength-2) << 8) | raw.at(DataLength-1);	
-	RNetUtility::CRC16(&checksum, pdata, DataLength - 2); 
+	RNetChecksum::CRC16(&checksum, pdata, DataLength - 2); 
 	
 	// destroy the array
 	delete pdata;
@@ -100,48 +100,6 @@ bool RNetUtility::IsDataValid(const std::vector<uint8_t>& raw) {
 	return true;
 }
 
-void RNetUtility::CRC8(uint8_t* pChecksum, const uint8_t* pBlock, uint32_t size) {
-	
-	uint8_t Temp;
-	uint8_t Flag;
-	
-	*(pChecksum) = CHECKSUM_CRC8_INIT_VALUE;
-	
-	while (size > 0u) {
-		Temp = *pBlock++;
-		
-		for (auto i=0; i<8u; i++) {
-			Flag = (uint8_t)(*pChecksum ^ Temp) & 0x80u;
-			*pChecksum <<= 1u;
-			Temp <<= 1u;
-			if (Flag) {
-				*pChecksum ^= CHECKSUM_CRC8_POLY;
-			}
-		}
-		size--;
-	}
-}
-
-void RNetUtility::CRC16(uint16_t* pChecksum, const uint8_t * pBlock, uint32_t size) {
-	
-	uint8_t Temp;
-	uint8_t Flag;
-	
-	*(pChecksum) = CHECKSUM_CRC16_INIT_VALUE;
-	
-	while (size > 0u) {
-		Temp = *pBlock++;
-		for (auto i=0u; i<8u; i++) {
-			Flag = ((uint8_t)(*pChecksum >> 8u) ^ Temp) & 0x80u;
-			*pChecksum <<= 1u;
-			Temp <<= 1u;
-			if (Flag) {
-				*pChecksum ^= CHECKSUM_CRC16_POLY;
-			}
-		}
-		size--;
-	}
-}
 
 }
 

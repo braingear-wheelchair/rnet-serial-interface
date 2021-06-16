@@ -1,5 +1,5 @@
-#ifndef RNETSERIAL_HPP
-#define RNETSERIAL_HPP
+#ifndef RNET_SERIAL_HPP
+#define RNET_SERIAL_HPP
 
 #include <string>
 #include <unistd.h>
@@ -10,40 +10,48 @@
 #include <libserial/SerialPort.h>
 
 #include "RNetPacket.hpp"
-#include "RNetUtility.hpp"
-#include "RNetCounter.hpp"
+#include "RNetTimer.hpp"
 
 
-namespace rnet {
+namespace rnetserial {
 
 
 class RNetSerial : protected LibSerial::SerialPort {
 	public:
-		RNetSerial(const std::string name = "rnet");
+		RNetSerial(const std::string name = "rnetserial");
 		~RNetSerial(void);
 
-		bool Open(const std::string port);
-		void Close(void);
+		bool OpenPort(const std::string port);
+		void ClosePort(void);
 		bool Connect(int timeout = -1);
-		bool IsOpen(void);
-
-
+		
 		bool WritePacket(RNetPacket& packet);
 		bool ReadPacket(RNetPacket& packet);
 		
+		//bool ReadPacket(RNetPacket& packet, size_t NBytes, size_t Timeout);
 
+	
+		bool WaitForAck(uint8_t SeqNum, int timeout = RNETCOMM_ACKTIMEOUT);	
+
+		bool SendVelocity(int8_t vx, int8_t vy);
 		void Shutdown(void);
 	
+		void SetSequence(uint8_t SeqNum);
+		uint8_t GetSequence(void);
 
 		const std::string name(void);
 
 		void Lock();
-		void Unlock();
+		void UnLock();
+		void IncrementSequence(void);
 	protected:
 
 	private:
 		std::string port_;
 		std::string name_;
+
+		uint8_t sequence_number_;
+
 		std::mutex	mutex_;
 
 };

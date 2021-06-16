@@ -2,37 +2,34 @@
 #define RNETSERVICE_XY_HPP
 
 #include "RNetDefinitions.hpp"
-#include "RNetService.hpp"
 #include "RNetSerial.hpp"
-#include "RNetPacket.hpp"
-#include "RNetUtility.hpp"
+#include "RNetService.hpp"
+#include "RNetBuffer.hpp"
+#include "RNetTimer.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
 class RNetServiceXY : public RNetService {
-
 	public:
-		RNetServiceXY(RNetSerial* serial);
+		RNetServiceXY(RNetBuffer* TxBuffer, RNetBuffer* RxBuffer);
 		~RNetServiceXY(void);
 
 		void Run(void);
 
 		void SetVelocity(int8_t vx, int8_t vy);
-		
-	protected:
-		void WriteVelocity(int8_t vx, int8_t vy);
-
-	protected:
-		RNetSerial* serial_;
-		int8_t vx_;
-		int8_t vy_;
+		bool WaitForAck(uint8_t SeqNum, unsigned int timeout = RNETCOMM_ACKTIMEOUT);
 
 	private:
+		RNetBuffer* tx_;
+		RNetBuffer* rx_;
+		RNetSerial* serial_;
+		std::vector<uint8_t> vmsg_;
 		std::mutex mutex_;
-
-
+		bool first_;
 };
 
+
 }
+
 
 #endif

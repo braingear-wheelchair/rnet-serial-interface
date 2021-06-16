@@ -3,12 +3,14 @@
 
 #include "RNetServiceXY.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
-RNetServiceXY::RNetServiceXY(RNetSerial* serial) {
-	this->serial_ = serial;
-	this->vx_ = 0;
-	this->vy_ = 0;
+RNetServiceXY::RNetServiceXY(RNetBuffer* TxBuffer, RNetBuffer* RxBuffer) {
+	this->name_ = "rnet_service_xy";
+	this->tx_ = TxBuffer;
+	this->rx_ = RxBuffer;
+	this->first_ = false;
+	//this->SetVelocity(0, 0);
 }
 
 RNetServiceXY::~RNetServiceXY(void) {
@@ -16,75 +18,98 @@ RNetServiceXY::~RNetServiceXY(void) {
 
 void RNetServiceXY::Run(void) {
 
-	RNetPacket AckTx;
-	RNetPacket PktRx;
-	int8_t vx, vy;
-	
+	RNetPacket Vxy;
+	std::vector<uint8_t> vmsg;
+	uint8_t SeqNum;
+	bool pass = false;
+
+	printf("[%s] Service is up\n", this->name().c_str());
 	while(this->IsRunning()) {
 
 		this->mutex_.lock();
-		vx = this->vx_;
-		vy = this->vy_;
+		if(this->first_ == false) {
+			pass = true;
+		}
 		this->mutex_.unlock();
 
+		if (pass == true) {
+			pass = false;
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			continue;
+		}
+		
+		
+		this->mutex_.lock();
+		vmsg = this->vmsg_;
+		this->mutex_.unlock();
 
-		this->serial_->Lock();
-		printf("Sending velocity [vx, vy]: %d, %d\n", vx, vy);
-		this->WriteVelocity(vx, vy);
+		SeqNum = RNetCounter::Instance().Get();
+		
+		Vxy.Set(SeqNum, PacketType::DATAPACKET, vmsg, vmsg.size());
+		//Vxy.DumpRaw();
+		this->tx_->Lock();
+		this->tx_->Add(Vxy);
+		this->tx_->Unlock();
 
-		this->serial_->UnLock();
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+		this->WaitForAck(SeqNum);
+		
+		RNetCounter::Instance().Increment();
 	}
-	printf("XY SERVICE IS NOT RUNNING\n\n");
+	
+	printf("[%s] Service is down\n", this->name().c_str());
+
 }
 
 void RNetServiceXY::SetVelocity(int8_t vx, int8_t vy) {
+
 	this->mutex_.lock();
-	this->vx_ = vx;
-	this->vy_ = vy;
+	this->first_ = true;
+	this->vmsg_.clear();
+	this->vmsg_.push_back(0x0b);
+	this->vmsg_.push_back(0x00);
+	this->vmsg_.push_back(0x00);
+	this->vmsg_.push_back((uint8_t)vx);
+	this->vmsg_.push_back((uint8_t)vy);
 	this->mutex_.unlock();
+
 }
 
-void RNetServiceXY::WriteVelocity(int8_t vx, int8_t vy) {
+bool RNetServiceXY::WaitForAck(uint8_t SeqNum, unsigned int timeout) {
 
-	RNetPacket AckRx;
-	uint8_t MessageLength = 5;
-	uint8_t PacketType = 2;
-	uint8_t SeqNum;
+	bool found = false;
+	unsigned int index;
 
-	uint8_t Message[MessageLength];
+	timer_msecs timer;
 
-	Message[0] = 0x0b;
-	Message[1] = 0x00;
-	Message[2] = 0x00;
-	Message[3] = (uint8_t)vx;
-	Message[4] = (uint8_t)vy;
+	timer.tic();
+	while(found == false && timer.toc() < timeout) {
 
-	printf("Get sequence..\n");
-	// Create RNet data packet
-	RNetPacket packet;
-	SeqNum = this->serial_->GetSequence();
-	packet.SetHeader(SeqNum, 0, PacketType::DATAPACKET, MessageLength);
-	packet.SetData(Message, MessageLength);
+		this->rx_->Lock();
+		for(auto it = this->rx_->Begin(); it != this->rx_->End(); it++) {
+			
+			if(it->GetSeqNum() == SeqNum) {
+				index = it - this->rx_->Begin();
+				found = true;
+				break;
+			}
+		}
 
-	printf("Send velocity...\n");
-	// Write packet on serial port
-	//this->WritePacket(packet);
-	//std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	
-	//this->WritePacket(packet);
-	do {
-		this->serial_->WritePacket(packet);
-		std::this_thread::sleep_for(std::chrono::milliseconds(20));
-		//printf("Data sent: ");
-		packet.Dump();
-	} while (this->serial_->WaitForAck(SeqNum, 20) == false);
-	printf("Sent and Ack received\n");
+		if (found == true) {
+			this->rx_->Remove(index);
+		}
 
+		this->rx_->Unlock();
 
-	this->serial_->IncrementSequence();
+		//std::this_thread::sleep_for(std::chrono::milliseconds(1));
+	}
+
+	return found;
+
 }
 
 }
 
 #endif
+
+

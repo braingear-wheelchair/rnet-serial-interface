@@ -3,10 +3,12 @@
 
 #include "RNetServiceRx.hpp"
 
-namespace rnetserial {
+namespace rnet {
 
-RNetServiceRx::RNetServiceRx(RNetSerial* serial) {
-	this->serial_ = serial;
+RNetServiceRx::RNetServiceRx(RNetBuffer* TxBuffer, RNetBuffer* RxBuffer) {
+	this->name_ = "rnet_service_receiver";
+	this->tx_ = TxBuffer;
+	this->rx_ = RxBuffer;
 }
 
 RNetServiceRx::~RNetServiceRx(void) {
@@ -15,23 +17,52 @@ RNetServiceRx::~RNetServiceRx(void) {
 void RNetServiceRx::Run(void) {
 
 	RNetPacket AckTx;
-	RNetPacket PktRx;
-	
+	std::vector<uint8_t> ackdata;
+	std::vector<uint8_t> todelete;
+
+	printf("[%s] Service is up\n", this->name().c_str());
 	while(this->IsRunning()) {
 
-		this->serial_->Lock();
-		if(this->serial_->ReadPacket(PktRx)) {
-			PktRx.Dump();
-			if(PktRx.GetHeader()->Descriptor != rnetserial::PacketType::ACKPACKET) {
-				AckTx.SetHeader(PktRx.GetHeader()->SequenceNumber, 0, rnetserial::PacketType::ACKPACKET, 0);
-				this->serial_->WritePacket(AckTx);
+		// Clear local list of element to be deleted
+		todelete.clear();
+
+		// Lock the Rx Buffer
+		this->rx_->Lock();
+
+		// Iterate for every element of the Rx Buffer
+		for(auto it=this->rx_->Begin(); it != this->rx_->End(); it++) {
+	
+			// If the element has DATAPACKET type then add a ACK packet to Tx
+			// Buffer
+			if(it->GetType() == PacketType::DATAPACKET) {
+
+				// Set the AckPacket with the SeqNumber of the Rx packet
+				AckTx.Set(it->GetSeqNum(), PacketType::ACKPACKET, ackdata, 0);
+
+				// Add the AckPacket to the Tx Buffer
+				this->tx_->Lock();
+				this->tx_->Add(AckTx);
+				this->tx_->Unlock();
+
+				// Add the index of this packet to the list to be deleted
+				todelete.push_back(it - this->rx_->Begin());
 			}
+
 		}
-		this->serial_->UnLock();
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+		// Delete all the packet from the Rx Buffer that have been already
+		// acknowledged
+		for (auto it=todelete.begin(); it != todelete.end(); it++)
+			this->rx_->Remove(*it);
+
+		// Unlock the Rx Buffer
+		this->rx_->Unlock();
 	}
-	printf("RX SERVICE IS NOT RUNNING\n\n");
+
+	printf("[%s] Service is down\n", this->name().c_str());
+
 }
+
 
 }
 
