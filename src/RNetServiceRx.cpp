@@ -57,9 +57,6 @@ void RNetServiceRx::Run(void) {
 
 		// Unlock the Rx Buffer
 		this->rx_->Unlock();
-
-
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 
 	printf("[%s] Service is down\n", this->name().c_str());

@@ -39,7 +39,7 @@ void RNetReceiver::Run(void) {
 			this->rx_->Unlock();
 		}
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(5));
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 	
 	printf("[%s] Service is down\n", this->name().c_str());

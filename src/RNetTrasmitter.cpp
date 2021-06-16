@@ -29,17 +29,24 @@ void RNetTrasmitter::Run(void) {
 
 		this->tx_->Lock();
 
+		// Firstly, it consumes all the ACK packets
 		for(auto it=this->tx_->Begin(); it != this->tx_->End(); it++) {
-			this->serial_->WritePacket(*it);
+			if(it->GetType() == ACKPACKET)
+				this->serial_->WritePacket(*it);
+		}
+		
+		// Secondly, it consumes all the DATA packets
+		for(auto it=this->tx_->Begin(); it != this->tx_->End(); it++) {
+			if(it->GetType() == DATAPACKET)
+				this->serial_->WritePacket(*it);
 		}
 	
 		this->tx_->Clear();
 		this->tx_->Unlock();
 		
 		this->serial_->Unlock();
-
+		
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
 
 	}
 	printf("[%s] Service is down\n", this->name().c_str());

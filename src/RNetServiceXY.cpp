@@ -9,7 +9,8 @@ RNetServiceXY::RNetServiceXY(RNetBuffer* TxBuffer, RNetBuffer* RxBuffer) {
 	this->name_ = "rnet_service_xy";
 	this->tx_ = TxBuffer;
 	this->rx_ = RxBuffer;
-	this->SetVelocity(0, 0);
+	this->first_ = false;
+	//this->SetVelocity(0, 0);
 }
 
 RNetServiceXY::~RNetServiceXY(void) {
@@ -20,10 +21,23 @@ void RNetServiceXY::Run(void) {
 	RNetPacket Vxy;
 	std::vector<uint8_t> vmsg;
 	uint8_t SeqNum;
+	bool pass = false;
 
 	printf("[%s] Service is up\n", this->name().c_str());
 	while(this->IsRunning()) {
 
+		this->mutex_.lock();
+		if(this->first_ == false) {
+			pass = true;
+		}
+		this->mutex_.unlock();
+
+		if (pass == true) {
+			pass = false;
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			continue;
+		}
+		
 		
 		this->mutex_.lock();
 		vmsg = this->vmsg_;
@@ -50,6 +64,7 @@ void RNetServiceXY::Run(void) {
 void RNetServiceXY::SetVelocity(int8_t vx, int8_t vy) {
 
 	this->mutex_.lock();
+	this->first_ = true;
 	this->vmsg_.clear();
 	this->vmsg_.push_back(0x0b);
 	this->vmsg_.push_back(0x00);

@@ -25,6 +25,7 @@ class RNetServiceXY : public RNetService {
 		RNetSerial* serial_;
 		std::vector<uint8_t> vmsg_;
 		std::mutex mutex_;
+		bool first_;
 };
 
 
