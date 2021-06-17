@@ -1,3 +1,5 @@
+AM_CXXFLAGS = -std=c++11 
+
 lib_LTLIBRARIES = librnetserial.la
 
 bin_PROGRAMS = rnet_keyboard_control
@@ -40,3 +42,6 @@ librnetserial_la_LDFLAGS = $(AM_CFLAGS) \
 
 rnet_keyboard_control_SOURCES = rnet_keyboard_control.cpp
 rnet_keyboard_control_LDADD   = $(top_builddir)/src/librnetserial.la
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = rnetserial.pc
