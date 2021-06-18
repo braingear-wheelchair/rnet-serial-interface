@@ -4,8 +4,8 @@
 #include "RNetBuffer.hpp"
 #include "RNetServiceRx.hpp"
 #include "RNetServiceXY.hpp"
-#include "RNetTrasmitter.hpp"
-#include "RNetReceiver.hpp"
+#include "RNetWriter.hpp"
+#include "RNetReader.hpp"
 #include "RNetSerial.hpp"
 #include "RNetServiceKeyboard.hpp"
 
@@ -50,8 +50,8 @@ int main(int argc, char** argv) {
 	rnet::RNetSerial rnet;
 	rnet::RNetBuffer tx;
 	rnet::RNetBuffer rx;
-	rnet::RNetReceiver SrvSerialRx(&rnet, &rx);
-	rnet::RNetTrasmitter SrvSerialTx(&rnet, &tx);
+	rnet::RNetReader SrvSerialRx(&rnet, &rx);
+	rnet::RNetWriter SrvSerialTx(&rnet, &tx);
 	rnet::RNetServiceRx SrvRx(&tx, &rx);
 	rnet::RNetServiceXY SrvXY(&tx, &rx);
 	rnet::RNetServiceKeyboard SrvKey;

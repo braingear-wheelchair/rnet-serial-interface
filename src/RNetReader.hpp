@@ -1,5 +1,5 @@
-#ifndef RNETRECEIVER_HPP
-#define RNETRECEIVER_HPP
+#ifndef RNETREADER_HPP
+#define RNETREADER_HPP
 
 #include "RNetSerial.hpp"
 #include "RNetService.hpp"
@@ -7,10 +7,10 @@
 
 namespace rnet {
 
-class RNetReceiver : public RNetService {
+class RNetReader : public RNetService {
 	public:
-		RNetReceiver(RNetSerial* serial, RNetBuffer* RxBuffer);
-		~RNetReceiver(void);
+		RNetReader(RNetSerial* serial, RNetBuffer* RxBuffer);
+		~RNetReader(void);
 
 		void Run(void);
 

@@ -1,22 +1,22 @@
 #ifndef RNETRECEIVER_CPP
 #define RNETRECEIVER_CPP
 
-#include "RNetReceiver.hpp"
+#include "RNetReader.hpp"
 
 
 namespace rnet {
 
-RNetReceiver::RNetReceiver(RNetSerial* serial, RNetBuffer* RxBuffer) {
+RNetReader::RNetReader(RNetSerial* serial, RNetBuffer* RxBuffer) {
 
-	this->name_   = "rnet_receiver";
+	this->name_   = "rnet_reader";
 	this->serial_ = serial;
 	this->rx_     = RxBuffer;
 }
 
-RNetReceiver::~RNetReceiver(void) {
+RNetReader::~RNetReader(void) {
 }
 
-void RNetReceiver::Run(void) {
+void RNetReader::Run(void) {
 
 	RNetPacket PktRx;
 

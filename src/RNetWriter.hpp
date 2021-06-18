@@ -1,5 +1,5 @@
-#ifndef RNETTRASMITTER_HPP
-#define RNETTRASMITTER_HPP
+#ifndef RNETWRITER_HPP
+#define RNETWRITER_HPP
 
 #include "RNetSerial.hpp"
 #include "RNetService.hpp"
@@ -7,10 +7,10 @@
 
 namespace rnet {
 
-class RNetTrasmitter : public RNetService {
+class RNetWriter : public RNetService {
 	public:
-		RNetTrasmitter(RNetSerial* serial, RNetBuffer* TxBuffer);
-		~RNetTrasmitter(void);
+		RNetWriter(RNetSerial* serial, RNetBuffer* TxBuffer);
+		~RNetWriter(void);
 
 		void Run(void);
 

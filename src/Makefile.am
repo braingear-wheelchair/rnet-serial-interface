@@ -12,8 +12,8 @@ librnetserial_include_HEADERS = RNetDefinitions.hpp \
 								RNetPacket.hpp \
 								RNetBuffer.hpp \
 								RNetSerial.hpp \
-								RNetReceiver.hpp \
-								RNetTrasmitter.hpp \
+								RNetReader.hpp \
+								RNetWriter.hpp \
 								RNetService.hpp \
 								RNetServiceRx.hpp \
 								RNetServiceXY.hpp \
@@ -26,8 +26,8 @@ librnetserial_la_SOURCES =  RNetChecksum.cpp \
 							RNetPacket.cpp \
 							RNetBuffer.cpp \
 							RNetSerial.cpp \
-							RNetReceiver.cpp \
-							RNetTrasmitter.cpp \
+							RNetReader.cpp \
+							RNetWriter.cpp \
 							RNetService.cpp \
 							RNetServiceRx.cpp \
 							RNetServiceXY.cpp \

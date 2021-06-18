@@ -1,22 +1,22 @@
-#ifndef RNETTRASMITTER_CPP
-#define RNETTRASMITTER_CPP
+#ifndef RNETWRITER_CPP
+#define RNETWRITER_CPP
 
-#include "RNetTrasmitter.hpp"
+#include "RNetWriter.hpp"
 
 
 namespace rnet {
 
-RNetTrasmitter::RNetTrasmitter(RNetSerial* serial, RNetBuffer* TxBuffer) {
+RNetWriter::RNetWriter(RNetSerial* serial, RNetBuffer* TxBuffer) {
 
-	this->name_   = "rnet_trasmitter";
+	this->name_   = "rnet_writer";
 	this->serial_ = serial;
 	this->tx_     = TxBuffer;
 }
 
-RNetTrasmitter::~RNetTrasmitter(void) {
+RNetWriter::~RNetWriter(void) {
 }
 
-void RNetTrasmitter::Run(void) {
+void RNetWriter::Run(void) {
 
 	RNetPacket PktRx;
 	

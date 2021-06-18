@@ -2,8 +2,8 @@
 #include "RNetBuffer.hpp"
 #include "RNetServiceRx.hpp"
 #include "RNetServiceXY.hpp"
-#include "RNetTrasmitter.hpp"
-#include "RNetReceiver.hpp"
+#include "RNetWriter.hpp"
+#include "RNetReader.hpp"
 #include "RNetSerial.hpp"
 #include "RNetServiceKeyboard.hpp"
 
@@ -52,9 +52,9 @@ int main(int argc, char** argv) {
 	rnet::RNetBuffer tx;
 	rnet::RNetBuffer rx;
 
-	/*** RNet threads to receive and trasmit ***/
-	rnet::RNetReceiver receiver(&rnet, &rx);
-	rnet::RNetTrasmitter trasmitter(&rnet, &tx);
+	/*** RNet threads to read and write ***/
+	rnet::RNetReader reader(&rnet, &rx);
+	rnet::RNetWriter writer(&rnet, &tx);
 
 	/*** Generic RNet service to acknowledge messages from the chipset ***/
 	rnet::RNetServiceRx srvrx(&tx, &rx);
@@ -86,8 +86,8 @@ int main(int argc, char** argv) {
 	/***********************************/
 	/*   Starting mandatory services   */
 	/***********************************/
-	receiver.Start();
-	trasmitter.Start();
+	reader.Start();
+	writer.Start();
 	srvrx.Start();
 	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
@@ -167,14 +167,14 @@ int main(int argc, char** argv) {
 	srvkey.Stop();
 	srvrx.Stop();
 	srvxy.Stop();
-	receiver.Stop();
-	trasmitter.Stop();
+	reader.Stop();
+	writer.Stop();
 	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
 	/*** Joining the threads ***/
 	srvrx.Join();
-	receiver.Join();
-	trasmitter.Join();
+	reader.Join();
+	writer.Join();
 	srvxy.Join();
 	srvkey.Join();
 

@@ -3,8 +3,8 @@
 #include "RNetPacket.hpp"
 #include "RNetBuffer.hpp"
 #include "RNetServiceRx.hpp"
-#include "RNetReceiver.hpp"
-#include "RNetTrasmitter.hpp"
+#include "RNetReader.hpp"
+#include "RNetWriter.hpp"
 #include "RNetSerial.hpp"
 
 void dump_buffer(rnet::RNetBuffer& buff) {
@@ -37,8 +37,8 @@ int main(int argc, char** argv) {
 	rnet::RNetSerial rnet;
 	rnet::RNetBuffer tx;
 	rnet::RNetBuffer rx;
-	rnet::RNetReceiver SrvSerialRx(&rnet, &rx);
-	rnet::RNetTrasmitter SrvSerialTx(&rnet, &tx);
+	rnet::RNetReader SrvSerialRx(&rnet, &rx);
+	rnet::RNetWriter SrvSerialTx(&rnet, &tx);
 	rnet::RNetServiceRx SrvRx(&tx, &rx);
 
 	SrvRx.Start();
