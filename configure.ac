@@ -45,6 +45,7 @@ AC_SUBST([CURRENT],[lib_current])
 AC_SUBST([REVISION],[lib_revision])
 AC_SUBST([AGE],[lib_age])
 
-AC_CONFIG_FILES([Makefile src/Makefile src/rnetserial.pc tests/Makefile])
+#AC_CONFIG_FILES([Makefile src/Makefile src/rnetserial.pc tests/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile src/rnetserial.pc])
 AC_OUTPUT
 
