@@ -37,7 +37,7 @@ AC_SEARCH_LIBS([pthread_create], [pthread posix4], [],
 
 
 # Checks for libraries.
-PKG_CHECK_MODULES([libserial], [libserial], [], AC_MSG_ERROR([Libserial cannot be found.]))
+PKG_CHECK_MODULES([libserial], [libserial >= 1.0.0], [], AC_MSG_ERROR([Libserial cannot be found.]))
 
 AC_HEADER_STDBOOL
 
