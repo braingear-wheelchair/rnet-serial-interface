@@ -12,12 +12,10 @@ RNetService::RNetService(void) {
 }
 
 RNetService::~RNetService(void) {
-	//bool isrunning = this->IsRunning();
-	//if(isrunning == true) {
-	//	this->Stop();
-	//}
-	//this->Stop();
-	//this->Join();
+	if(this->IsRunning() == true) {
+		this->Stop();
+		this->Join();
+	}
 }
 
 void RNetService::Start(void) {
@@ -28,8 +26,8 @@ void RNetService::Start(void) {
 	}
 
 	printf("[%s] Service is requested to start\n", this->name().c_str());
-	this->mutex_.lock();
 	this->thread_ = std::thread(&RNetService::Run, this);
+	this->mutex_.lock();
 	this->run_ = true;
 	this->mutex_.unlock();
 	
@@ -52,9 +50,8 @@ bool RNetService::IsRunning(void) {
 
 void RNetService::Join(void) {
 	printf("[%s] Service is requested to join\n", this->name().c_str());
-	this->mutex_.lock();
-	this->thread_.join();
-	this->mutex_.unlock();
+	if(this->thread_.joinable() == true)
+		this->thread_.join();
 }
 
 std::string RNetService::name(void) {

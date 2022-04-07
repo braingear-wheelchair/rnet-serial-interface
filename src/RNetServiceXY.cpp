@@ -37,8 +37,7 @@ void RNetServiceXY::Run(void) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			continue;
 		}
-		
-		
+
 		this->mutex_.lock();
 		vmsg = this->vmsg_;
 		this->mutex_.unlock();
