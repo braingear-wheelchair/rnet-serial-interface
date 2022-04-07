@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <termios.h>
-#include <stropts.h>
 #include <cstdio>
 #include <iostream>
 #include <thread>

@@ -123,6 +123,8 @@ bool RNetSerial::WritePacket(RNetPacket& packet) {
 
 	this->Write(vpacket);
 	this->DrainWriteBuffer();
+
+	return true;
 }
 
 bool RNetSerial::ReadPacket(RNetPacket& packet) {
