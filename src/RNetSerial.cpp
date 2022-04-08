@@ -80,6 +80,7 @@ bool RNetSerial::Connect(int timeout) {
 	RNetPacket Startup;
 	RNetPacket AckTx;
 	RNetPacket AckRx;
+	timer_msecs timer;
 
 	std::vector<uint8_t> StartupMessage = {RNETPACKET_STARTUP_MESSAGE};
 	std::vector<uint8_t> ackdata;
@@ -91,15 +92,26 @@ bool RNetSerial::Connect(int timeout) {
 		// Write startup packet
 		this->WritePacket(Startup);
 		//Startup.Dump();
-		
+	
 		// Wait for ACK packet
-		while(this->ReadPacket(AckRx) == false);
+		timer.tic();
+		while(this->ReadPacket(AckRx) == false) {
+
+			if(timeout == -1)
+				continue;
+
+			if(timer.toc() >= timeout) {
+				this->Unlock();
+				return false;
+			}
+		}
 		
 		// Check Ack
 		if(AckRx.GetSeqNum() != RNetCounter::Instance().Get()) {
 			printf("[%s] Error acknowledge packet (SN=%d) does not match with "
 				   "the current sequence number (SN=%d).\n", this->name().c_str(), 
 					AckRx.GetSeqNum(), RNetCounter::Instance().Get());
+			this->Unlock();
 			return false;
 		}
 
